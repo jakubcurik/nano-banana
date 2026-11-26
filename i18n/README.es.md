@@ -9,11 +9,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/jakubcurik/nano-banana/tests.yml?branch=main&style=flat-square&label=tests&labelColor=0f1b2d"></a>
-  <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml"><img alt="Validación" src="https://img.shields.io/github/actions/workflow/status/jakubcurik/nano-banana/validate.yml?branch=main&style=flat-square&label=validate&labelColor=0f1b2d"></a>
-  <a href="https://github.com/jakubcurik/nano-banana/releases"><img alt="Versión" src="https://img.shields.io/github/v/release/jakubcurik/nano-banana?style=flat-square&label=release&labelColor=0f1b2d&color=ffd54a"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/jakubcurik/nano-banana/tests.yml?branch=main&style=flat-square&label=tests&labelColor=0f1b2d&cacheSeconds=600"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml"><img alt="Validación" src="https://img.shields.io/github/actions/workflow/status/jakubcurik/nano-banana/validate.yml?branch=main&style=flat-square&label=validate&labelColor=0f1b2d&cacheSeconds=600"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/releases"><img alt="Versión" src="https://img.shields.io/github/v/release/jakubcurik/nano-banana?style=flat-square&label=release&labelColor=0f1b2d&color=ffd54a&cacheSeconds=600"></a>
   <a href="../LICENSE"><img alt="Licencia: MIT" src="https://img.shields.io/badge/license-MIT-ffd54a?style=flat-square&labelColor=0f1b2d"></a>
-  <a href="https://github.com/jakubcurik/nano-banana/stargazers"><img alt="Estrellas" src="https://img.shields.io/github/stars/jakubcurik/nano-banana?style=flat-square&labelColor=0f1b2d&color=ffd54a"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/stargazers"><img alt="Estrellas" src="https://img.shields.io/github/stars/jakubcurik/nano-banana?style=flat-square&labelColor=0f1b2d&color=ffd54a&cacheSeconds=600"></a>
 </p>
 
 <p align="center">
