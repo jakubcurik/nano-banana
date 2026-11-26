@@ -168,24 +168,7 @@ Die Bilder landen in `.cache/nano-banana/`, jedes neben einer `.txt`-Datei mit d
 
 ## So funktioniert es
 
-```mermaid
-flowchart LR
-    A[Du bittest um ein Bild] --> B[Zweck, Format, Seitenverhältnis]
-    B --> C{Zeigt es eine echte Art, ein echtes Objekt oder einen echten Ort?}
-    C -->|ja| D[2-3 Referenzfotos besorgen, du bestätigst sie]
-    C -->|nein| E[Prompt auf Englisch schreiben]
-    D --> E
-    E --> F[Preis schätzen]
-    F --> G{Mehr als etwa 0,50 USD oder mehr als 4 Bilder?}
-    G -->|ja| H[Erst dich fragen]
-    G -->|nein| I[Generieren]
-    H --> I
-    I --> J[Ergebnis ansehen]
-    J --> K{Braucht es eine Korrektur?}
-    K -->|ja| L[Am selben Bild anknüpfen]
-    L --> J
-    K -->|nein| M[Fertig: Bild, Prompt und Kosten gespeichert]
-```
+Der Skill lässt den Agenten in einer festen Reihenfolge arbeiten. Zuerst fragt er, wofür das Bild gedacht ist. Soll es eine echte Art, ein Produkt oder einen Ort zeigen, besorgt er zwei oder drei Referenzfotos und lässt sie dich bestätigen. Danach schreibt er den Prompt auf Englisch und schätzt den Preis; bei mehr als etwa 0,50 USD oder mehr als vier Bildern fragt er vorher nach. Nach der Generierung sieht er sich das Ergebnis an und korrigiert Kleinigkeiten per Follow-up, statt von vorn anzufangen.
 
 Der vollständige Ablauf steht in [`SKILL.md`](../skills/nano-banana/SKILL.md). Prompt-Vorlagen, Bearbeitungsvorlagen und eine Liste häufiger Fehler findest du in [`references/prompting.md`](../skills/nano-banana/references/prompting.md).
 

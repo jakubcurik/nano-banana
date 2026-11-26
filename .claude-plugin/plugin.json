@@ -8,5 +8,5 @@
   "homepage": "https://github.com/jakubcurik/nano-banana",
   "repository": "https://github.com/jakubcurik/nano-banana",
   "license": "MIT",
-  "keywords": ["image-generation", "gemini", "nano-banana", "skill", "cost-estimate"]
+  "keywords": ["image-generation", "ai-image-generation", "text-to-image", "image-editing", "generative-ai", "gemini", "gemini-api", "nano-banana", "nano-banana-2", "nano-banana-pro", "claude-code", "agent-skills", "ai-agents", "skill", "cost-estimate"]
 }

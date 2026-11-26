@@ -168,24 +168,7 @@ As imagens vão para `.cache/nano-banana/`, cada uma ao lado de um arquivo `.txt
 
 ## Como funciona
 
-```mermaid
-flowchart LR
-    A[Você pede uma imagem] --> B[Finalidade, formato, proporção]
-    B --> C{Mostra uma espécie, objeto ou lugar real?}
-    C -->|sim| D[Buscar 2-3 fotos de referência, você confirma]
-    C -->|não| E[Escrever o prompt em inglês]
-    D --> E
-    E --> F[Estimar o preço]
-    F --> G{Mais de cerca de 0,50 USD, ou mais de 4 imagens?}
-    G -->|sim| H[Perguntar a você primeiro]
-    G -->|não| I[Gerar]
-    H --> I
-    I --> J[Olhar o resultado]
-    J --> K{Precisa de ajuste?}
-    K -->|sim| L[Continuar a partir da mesma imagem]
-    L --> J
-    K -->|não| M[Pronto: imagem, prompt e custo salvos]
-```
+O skill faz o agente trabalhar numa ordem fixa. Primeiro ele pergunta para que serve a imagem. Se ela precisa mostrar uma espécie, um produto ou um lugar reais, ele busca duas ou três fotos de referência e pede que você as confirme. Depois escreve o prompt em inglês e estima o preço; se passar de cerca de 0,50 USD ou se forem mais de quatro imagens, ele pergunta antes. Depois de gerar, olha o resultado e corrige detalhes com um follow-up, em vez de recomeçar do zero.
 
 O fluxo completo está no [`SKILL.md`](../skills/nano-banana/SKILL.md). Modelos de prompt, modelos de edição e uma lista de erros comuns estão em [`references/prompting.md`](../skills/nano-banana/references/prompting.md).
 

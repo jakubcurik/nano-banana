@@ -160,24 +160,7 @@ Images land in `.cache/nano-banana/`, each next to a `.txt` file with the prompt
 
 ## How it works
 
-```mermaid
-flowchart LR
-    A[You ask for an image] --> B[Purpose, format, aspect ratio]
-    B --> C{Does it show a real species, object or place?}
-    C -->|yes| D[Get 2-3 reference photos, you confirm them]
-    C -->|no| E[Write the prompt in English]
-    D --> E
-    E --> F[Estimate the price]
-    F --> G{More than about 0.50 USD, or more than 4 images?}
-    G -->|yes| H[Ask you first]
-    G -->|no| I[Generate]
-    H --> I
-    I --> J[Look at the result]
-    J --> K{Needs a tweak?}
-    K -->|yes| L[Follow up on the same image]
-    L --> J
-    K -->|no| M[Done: image, prompt and cost saved]
-```
+The skill makes the agent work in a fixed order. It first asks what the image is for. If the picture has to show a real species, product or place, it gets two or three reference photos and asks you to confirm them. Then it writes the prompt in English and estimates the price, and it asks you first when the estimate is above about 0.50 USD or more than four images are wanted. After generating, it looks at the result and fixes small things with a follow-up instead of starting over.
 
 The full workflow is in [`SKILL.md`](skills/nano-banana/SKILL.md). Prompt templates, edit templates and a list of common mistakes are in [`references/prompting.md`](skills/nano-banana/references/prompting.md).
 

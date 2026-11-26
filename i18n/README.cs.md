@@ -160,24 +160,7 @@ Obrázky se ukládají do `.cache/nano-banana/`, každý vedle souboru `.txt` s 
 
 ## Jak to funguje
 
-```mermaid
-flowchart LR
-    A[Požádáš o obrázek] --> B[Účel, formát, poměr stran]
-    B --> C{Ukazuje skutečný druh, předmět nebo místo?}
-    C -->|ano| D[Sehnat 2-3 referenční fotky, ty je potvrdíš]
-    C -->|ne| E[Napsat prompt anglicky]
-    D --> E
-    E --> F[Odhadnout cenu]
-    F --> G{Víc než asi 0,50 USD, nebo víc než 4 obrázky?}
-    G -->|ano| H[Nejdřív se zeptat tebe]
-    G -->|ne| I[Vygenerovat]
-    H --> I
-    I --> J[Prohlédnout výsledek]
-    J --> K{Chce to úpravu?}
-    K -->|ano| L[Navázat na stejný obrázek]
-    L --> J
-    K -->|ne| M[Hotovo: obrázek, prompt i cena uložené]
-```
+Skill nutí agenta pracovat v pevném pořadí. Nejdřív se zeptá, k čemu obrázek je. Když má ukazovat skutečný druh, produkt nebo místo, sežene dvě nebo tři referenční fotky a nechá si je od tebe potvrdit. Potom napíše prompt anglicky a odhadne cenu. Pokud odhad přesáhne asi 0,50 USD nebo se mají generovat víc než čtyři obrázky, nejdřív se zeptá tebe. Po vygenerování výsledek prohlédne a drobnosti opraví navázáním, místo aby generoval znovu od začátku.
 
 Celý postup je v [`SKILL.md`](../skills/nano-banana/SKILL.md). Šablony promptů, šablony úprav a seznam častých chyb najdeš v [`references/prompting.md`](../skills/nano-banana/references/prompting.md).
 

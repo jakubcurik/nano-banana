@@ -168,24 +168,7 @@ uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --curren
 
 ## 工作原理
 
-```mermaid
-flowchart LR
-    A[你提出出图需求] --> B[用途、格式、宽高比]
-    B --> C{画面里有真实的物种、物品或地点吗？}
-    C -->|有| D[找 2-3 张参考照片，由你确认]
-    C -->|没有| E[用英文写 prompt]
-    D --> E
-    E --> F[预估价格]
-    F --> G{超过约 0.50 美元，或超过 4 张图？}
-    G -->|是| H[先问你]
-    G -->|否| I[生成]
-    H --> I
-    I --> J[查看结果]
-    J --> K{需要微调吗？}
-    K -->|是| L[在同一张图上继续修改]
-    L --> J
-    K -->|否| M[完成：图片、prompt 和费用都已保存]
-```
+这个 skill 让 agent 按固定顺序工作。它先问清楚图片的用途。如果图片要呈现真实存在的物种、产品或地点，它会找两三张参考照片，并请你确认。然后用英文写 prompt 并估算价格；如果估价超过约 0.50 美元，或要生成四张以上的图片，它会先问你。生成之后，它会查看结果，小问题用 follow-up 修改，而不是重新生成。
 
 完整流程见 [`SKILL.md`](../skills/nano-banana/SKILL.md)。prompt 模板、编辑模板和常见错误清单在 [`references/prompting.md`](../skills/nano-banana/references/prompting.md)。
 
