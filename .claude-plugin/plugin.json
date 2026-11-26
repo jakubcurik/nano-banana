@@ -1,12 +1,12 @@
 {
-  "name": "gemini-image",
+  "name": "nano-banana",
   "description": "Generate and edit images with Google's Nano Banana models (Gemini API): price estimate before every call, real cost after, a tested workflow and a prompting guide.",
   "version": "1.0.0",
   "author": {
     "name": "jakubcurik"
   },
-  "homepage": "https://github.com/jakubcurik/gemini-image",
-  "repository": "https://github.com/jakubcurik/gemini-image",
+  "homepage": "https://github.com/jakubcurik/nano-banana",
+  "repository": "https://github.com/jakubcurik/nano-banana",
   "license": "MIT",
   "keywords": ["image-generation", "gemini", "nano-banana", "skill", "cost-estimate"]
 }

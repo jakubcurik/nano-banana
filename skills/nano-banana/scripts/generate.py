@@ -13,7 +13,7 @@ Google recommends for the Nano Banana models. --batch uses the Batch API, which
 still takes the generateContent format.
 
 The API key is read from GEMINI_API_KEY (or GOOGLE_API_KEY), otherwise from
-~/.config/gemini-image/api-key.
+~/.config/nano-banana/api-key.
 """
 import argparse
 import base64
@@ -34,7 +34,7 @@ MODELS = CATALOG["models"]
 ASPECT_RATIOS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9",
                  "1:4", "4:1", "1:8", "8:1"]
 EXTREME_RATIOS = {"1:4", "4:1", "1:8", "8:1"}
-KEY_FILE = Path.home() / ".config" / "gemini-image" / "api-key"
+KEY_FILE = Path.home() / ".config" / "nano-banana" / "api-key"
 LAST_ID_FILE = "last-interaction.txt"
 CNB_URL = ("https://www.cnb.cz/cs/financni-trhy/devizovy-trh/kurzy-devizoveho-trhu/"
            "kurzy-devizoveho-trhu/denni_kurz.txt")
@@ -258,7 +258,7 @@ def images_from_generate_content(response):
 
 def run_batch(client, a, model, images):
     requests = [batch_request(a, images) for _ in range(a.count)]
-    job = client.batches.create(model=model["id"], src=requests, config={"display_name": "gemini-image"})
+    job = client.batches.create(model=model["id"], src=requests, config={"display_name": "nano-banana"})
     print(f"Batch job: {job.name}. Waiting for the result (checking every 30 s, Ctrl+C stops waiting; "
           "the job keeps running and can take up to 24 h)...")
     final_states = ("JOB_STATE_SUCCEEDED", "JOB_STATE_FAILED", "JOB_STATE_CANCELLED", "JOB_STATE_EXPIRED")
@@ -296,7 +296,7 @@ def build_parser():
     ap.add_argument("--follow-up", nargs="?", const="last", metavar="ID",
                     help="edit the last (or the given) result with this prompt; the model remembers the image")
     ap.add_argument("-n", "--count", type=int, default=1, help="number of images (each one is billed)")
-    ap.add_argument("-o", "--out", default=".cache/gemini-image", help="output folder")
+    ap.add_argument("-o", "--out", default=".cache/nano-banana", help="output folder")
     ap.add_argument("--format", choices=IMAGE_FORMATS, help="output file format (default: what the model returns)")
     ap.add_argument("--no-store", action="store_true",
                     help="ask Google not to store the interaction (disables --follow-up on this result)")

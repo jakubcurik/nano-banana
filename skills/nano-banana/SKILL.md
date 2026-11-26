@@ -1,5 +1,5 @@
 ---
-name: gemini-image
+name: nano-banana
 description: >
   Generate and edit images with Google's Nano Banana models through the Gemini API, using a
   single-file script that estimates the price before every call and reports the real cost after.
@@ -39,7 +39,7 @@ uv run --script <skill-dir>/scripts/generate.py "English prompt" [options]
 | `--search` | Google Search grounding incl. image search (2.1, 2, Pro; not lite) |
 | `--follow-up [ID]` | edit the last result (or the given interaction) with a new prompt; the model remembers the image |
 | `-n 4` | number of images, each one is billed |
-| `-o folder` | output folder, default `.cache/gemini-image` in the current directory |
+| `-o folder` | output folder, default `.cache/nano-banana` in the current directory |
 | `--format png / jpeg` | output file format (jpeg is much smaller, good for the web) |
 | `--prompt-file file` | read the prompt from a file instead of the command line |
 | `--no-store` | ask Google not to keep the interaction (then `--follow-up` is impossible) |
@@ -73,11 +73,11 @@ Prices are a snapshot from 26 Nov 2026. `--estimate` prints the number for the c
 6. **Refine with `--follow-up`.** Small changes go through `--follow-up`, and the prompt lists what must not change. It is cheaper and more consistent than generating again.
    **Same image in a higher resolution or another aspect ratio:** sending the same prompt again with `-s 4K` or `-a 9:16` gives a completely different image (a different person, for portraits). To keep the image, use `--follow-up` with the new `-s` or `-a` and a prompt like "Recreate this exact photo as a horizontal image... Keep everything else the same." Tested on 26 Oct 2026: a 9:16 portrait converted to 16:9 kept face, hair, clothes, room and light, and the model only painted in the surroundings. The model redraws the image, so compare the result with the original. If it is unclear whether the user wants the same image or a new variant, ask.
 7. **Comparing variants** (two prompts, JSON vs. text, two models): do not conclude anything from a single image, differences are often chance. For a real comparison generate at least 3-4 images per variant (`-n`) and state the price first.
-8. **Clean up.** `.cache/gemini-image` belongs in `.gitignore`. Move an image that will be used into the project, where it belongs.
+8. **Clean up.** `.cache/nano-banana` belongs in `.gitignore`. Move an image that will be used into the project, where it belongs.
 
 ## API key
 
-The script looks for the key in `GEMINI_API_KEY` (or `GOOGLE_API_KEY`), otherwise in `~/.config/gemini-image/api-key`. If it is missing, ask the user to create one in [Google AI Studio](https://aistudio.google.com/apikey) with billing enabled and to save it themselves. Never print the key or store it in a project: it could be abused on the user's account.
+The script looks for the key in `GEMINI_API_KEY` (or `GOOGLE_API_KEY`), otherwise in `~/.config/nano-banana/api-key`. If it is missing, ask the user to create one in [Google AI Studio](https://aistudio.google.com/apikey) with billing enabled and to save it themselves. Never print the key or store it in a project: it could be abused on the user's account.
 
 ## Limits and good to know
 

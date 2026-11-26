@@ -6,7 +6,7 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "skills" / "gemini-image" / "scripts" / "generate.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "skills" / "nano-banana" / "scripts" / "generate.py"
 spec = importlib.util.spec_from_file_location("generate", SCRIPT)
 generate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(generate)

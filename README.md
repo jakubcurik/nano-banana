@@ -1,4 +1,4 @@
-# gemini-image
+# nano-banana
 
 An agent skill for generating and editing images with Google's **Nano Banana** models through the Gemini API. It adds what a bare API call does not give you: a **price estimate before every call**, the **real cost after**, option checks, a workflow that avoids wasted money, and a prompting guide.
 
@@ -10,7 +10,7 @@ It follows the open [Agent Skills](https://agentskills.io) format, so it works i
 
 Google's own `gemini-api` CLI (`gemini-api image "..."`) and its official skills handle the *call*. This skill handles everything around it:
 
-| | Google `gemini-api` CLI + skills | gemini-image |
+| | Google `gemini-api` CLI + skills | nano-banana |
 |---|---|---|
 | Price estimate before a call, real cost after | no | yes |
 | Cost gate: the agent asks before expensive runs | no | yes |
@@ -29,19 +29,19 @@ If the CLI is installed, the skill treats it as an alternative for the generatio
 **Claude Code (plugin marketplace)**
 
 ```
-/plugin marketplace add jakubcurik/gemini-image
-/plugin install gemini-image@gemini-image
+/plugin marketplace add jakubcurik/nano-banana
+/plugin install nano-banana@nano-banana
 ```
 
 **Any agent, via [`npx skills`](https://github.com/vercel-labs/skills)**
 
 ```bash
-npx skills add jakubcurik/gemini-image
+npx skills add jakubcurik/nano-banana
 ```
 
 **Manual**
 
-Copy `skills/gemini-image/` into your agent's skills folder, for example `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` (Codex, Gemini CLI, Cursor).
+Copy `skills/nano-banana/` into your agent's skills folder, for example `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` (Codex, Gemini CLI, Cursor).
 
 ### Requirements
 
@@ -53,7 +53,7 @@ Give the script the key in one of two ways:
 ```bash
 export GEMINI_API_KEY="your-key"
 # or save it once (outside any repository):
-mkdir -p ~/.config/gemini-image && printf '%s' "your-key" > ~/.config/gemini-image/api-key
+mkdir -p ~/.config/nano-banana && printf '%s' "your-key" > ~/.config/nano-banana/api-key
 ```
 
 ## Use it
@@ -63,7 +63,7 @@ Just ask your agent for an image: "make a hero image for my coffee shop site, 16
 You can also run the script directly:
 
 ```bash
-S=skills/gemini-image/scripts/generate.py
+S=skills/nano-banana/scripts/generate.py
 
 uv run --script $S "A flat illustration of a red apple on a white table, soft daylight" --estimate
 uv run --script $S "A flat illustration of a red apple on a white table, soft daylight" -a 16:9 -s 2K --format jpeg
@@ -72,7 +72,7 @@ uv run --script $S "Put this product on a marble table" -i product.jpg -m pro -s
 uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --currency EUR
 ```
 
-Images land in `.cache/gemini-image/` by default, each with a `.txt` file holding the prompt, options and interaction ID.
+Images land in `.cache/nano-banana/` by default, each with a `.txt` file holding the prompt, options and interaction ID.
 
 ### Options
 
@@ -103,7 +103,7 @@ Images land in `.cache/gemini-image/` by default, each with a `.txt` file holdin
 | `pro` (`gemini-3-pro-image`) | hardest prompts, a lot of text | 0.134 / 0.134 / 0.24 |
 | `lite` (`gemini-3.1-flash-lite-image`) | many simple 1K images, no search | 0.034 |
 
-Prices and model data live in [`skills/gemini-image/scripts/models.json`](skills/gemini-image/scripts/models.json), which is the one file to update when Google changes the [price list](https://ai.google.dev/gemini-api/docs/pricing). `--search` is billed on top (5,000 grounded prompts per month free, then 14 USD per 1,000 search queries).
+Prices and model data live in [`skills/nano-banana/scripts/models.json`](skills/nano-banana/scripts/models.json), which is the one file to update when Google changes the [price list](https://ai.google.dev/gemini-api/docs/pricing). `--search` is billed on top (5,000 grounded prompts per month free, then 14 USD per 1,000 search queries).
 
 ## Things worth knowing
 
@@ -111,7 +111,7 @@ Prices and model data live in [`skills/gemini-image/scripts/models.json`](skills
 - **Accuracy.** The model invents details. For a specific animal species, real object or building, give it 2-3 reference photos with `-i`. Text alone, and even `--search`, is not enough. The skill enforces this in its workflow.
 - **Errors are not retried automatically.** A request that timed out may still have been billed.
 - **Search results.** When you publish output generated with `--search`, Google requires showing its search suggestions. The script saves them next to the image.
-- **Your key never goes into a project.** It comes from the environment or `~/.config/gemini-image/api-key`.
+- **Your key never goes into a project.** It comes from the environment or `~/.config/nano-banana/api-key`.
 
 ## Tests
 
@@ -127,7 +127,7 @@ The API paths were checked by hand against `google-genai` 3.6.1 on 26 Nov 2026: 
 
 ```
 .claude-plugin/          plugin and marketplace manifests (Claude Code)
-skills/gemini-image/
+skills/nano-banana/
   SKILL.md               the skill: workflow, options, model choice, limits
   references/prompting.md  prompting guide and templates
   scripts/generate.py    the script (uv, single file)

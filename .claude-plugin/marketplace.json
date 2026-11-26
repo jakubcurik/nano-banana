@@ -1,12 +1,12 @@
 {
-  "name": "gemini-image",
+  "name": "nano-banana",
   "description": "A skill for generating and editing images with Google's Nano Banana models, with cost control.",
   "owner": {
     "name": "jakubcurik"
   },
   "plugins": [
     {
-      "name": "gemini-image",
+      "name": "nano-banana",
       "source": "./",
       "description": "Generate and edit images with Google's Nano Banana models (Gemini API) with cost control and a prompting guide."
     }
