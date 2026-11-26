@@ -1,0 +1,71 @@
+{
+  "updated": "2026-11-26",
+  "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+  "notes": [
+    "price/batch are USD per generated image, standard and batch (null = no batch price published or verified).",
+    "per_million_image_tokens is USD per 1M output image tokens, used to compute the real cost after a call.",
+    "Prices and model lists change. Update this file, not the script."
+  ],
+  "search_pricing": "5,000 grounded prompts per month are free, then 14 USD per 1,000 search queries.",
+  "models": {
+    "2.1": {
+      "id": "gemini-nano-banana-2.1",
+      "name": "Nano Banana 2.1",
+      "status": "recommended default",
+      "sizes": {
+        "1K": {"price": 0.0336, "batch": 0.0168},
+        "2K": {"price": 0.0504, "batch": 0.0252},
+        "4K": {"price": 0.113, "batch": 0.0567}
+      },
+      "per_million_image_tokens": 30.0,
+      "thinking": ["minimal", "medium", "high"],
+      "search": true,
+      "extreme_aspect_ratios": true,
+      "max_input_images": 14
+    },
+    "2": {
+      "id": "gemini-3.1-flash-image",
+      "name": "Nano Banana 2",
+      "status": "deprecated, no shutdown date announced; only model with 512 px",
+      "sizes": {
+        "512": {"price": 0.045, "batch": null},
+        "1K": {"price": 0.067, "batch": null},
+        "2K": {"price": 0.101, "batch": null},
+        "4K": {"price": 0.151, "batch": null}
+      },
+      "per_million_image_tokens": 60.0,
+      "thinking": ["minimal", "high"],
+      "search": true,
+      "extreme_aspect_ratios": true,
+      "max_input_images": 14
+    },
+    "pro": {
+      "id": "gemini-3-pro-image",
+      "name": "Nano Banana Pro",
+      "status": "stable, for the hardest prompts and lots of text",
+      "sizes": {
+        "1K": {"price": 0.134, "batch": null},
+        "2K": {"price": 0.134, "batch": null},
+        "4K": {"price": 0.24, "batch": null}
+      },
+      "per_million_image_tokens": 120.0,
+      "thinking": [],
+      "search": true,
+      "extreme_aspect_ratios": false,
+      "max_input_images": 14
+    },
+    "lite": {
+      "id": "gemini-3.1-flash-lite-image",
+      "name": "Nano Banana 2 Lite",
+      "status": "stable, cheapest; weak at multi-image input and multi-turn editing",
+      "sizes": {
+        "1K": {"price": 0.0336, "batch": 0.0168}
+      },
+      "per_million_image_tokens": 30.0,
+      "thinking": ["minimal", "high"],
+      "search": false,
+      "extreme_aspect_ratios": false,
+      "max_input_images": 14
+    }
+  }
+}
