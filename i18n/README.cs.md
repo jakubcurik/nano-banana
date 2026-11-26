@@ -33,7 +33,15 @@
 </p>
 
 <p align="center">
-  <sub><a href="../README.md">English</a> &middot; Čeština</sub>
+  <sub><a href="../README.md">English</a> &middot;
+  <a href="README.zh-CN.md">简体中文</a> &middot;
+  <a href="README.es.md">Español</a> &middot;
+  <a href="README.ja.md">日本語</a> &middot;
+  <a href="README.pt-BR.md">Português (Brasil)</a> &middot;
+  <a href="README.de.md">Deutsch</a> &middot;
+  <a href="README.fr.md">Français</a> &middot;
+  <a href="README.ko.md">한국어</a> &middot;
+  Čeština</sub>
 </p>
 
 <p align="center">
@@ -221,7 +229,7 @@ Bez nich si model detaily skutečné věci domýšlí a výsledek vypadá věroh
 
 ## Přispívání
 
-Issues i pull requesty jsou vítané, hlavně když Google změní modely, ceny nebo API. Soubor `models.json`, tabulky v `SKILL.md` a README upravuj společně.
+Issues i pull requesty jsou vítané, hlavně když Google změní modely, ceny nebo API. Soubor `models.json`, tabulky v `SKILL.md` a README upravuj společně. Tento překlad vznikl s pomocí AI, opravy jsou vítané.
 
 Offline testy nepotřebují API klíč ani připojení k síti:
 

@@ -33,7 +33,15 @@
 </p>
 
 <p align="center">
-  <sub>English &middot; <a href="i18n/README.cs.md">Čeština</a></sub>
+  <sub>English &middot;
+  <a href="i18n/README.zh-CN.md">简体中文</a> &middot;
+  <a href="i18n/README.es.md">Español</a> &middot;
+  <a href="i18n/README.ja.md">日本語</a> &middot;
+  <a href="i18n/README.pt-BR.md">Português (Brasil)</a> &middot;
+  <a href="i18n/README.de.md">Deutsch</a> &middot;
+  <a href="i18n/README.fr.md">Français</a> &middot;
+  <a href="i18n/README.ko.md">한국어</a> &middot;
+  <a href="i18n/README.cs.md">Čeština</a></sub>
 </p>
 
 <p align="center">
@@ -221,7 +229,7 @@ Without one, the model fills in the details of a real thing from its imagination
 
 ## Contributing
 
-Issues and pull requests are welcome, especially when Google changes models, prices or the API. Update `models.json` and the tables in `SKILL.md` and this README together.
+Issues and pull requests are welcome, especially when Google changes models, prices or the API. Update `models.json` and the tables in `SKILL.md` and this README together. The translations in `i18n/` were made with the help of AI, and corrections are welcome.
 
 The offline tests need no API key and no network:
 
