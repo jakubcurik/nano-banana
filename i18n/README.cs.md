@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../assets/logo.png" width="132" alt="Logo nano-banana: žlutý banán s malou cenovkou na tmavě modrém čtverci">
+  <img src="../assets/logo.png" width="132" alt="Logo nano-banana: lesklá žlutá banánová postavička, která mává, na tmavě grafitovém čtverci">
 </p>
 
 <h1 align="center">nano-banana</h1>
@@ -45,7 +45,7 @@
 </p>
 
 <p align="center">
-  <img src="../assets/hero.jpg" width="880" alt="Kreslený banán v kulatých brýlích maluje krajinu na malém stojanu u stolu, vedle dlouhý papírový účet a pár zlatých mincí. Nadpis zní nano-banana.">
+  <img src="../assets/hero.jpg" width="880" alt="Lesklá 3D banánová postavička maluje slunečnou krajinu na malém stojanu, vedle dlouhý papírový účet a pár zlatých mincí. Nadpis zní nano-banana.">
 </p>
 
 nano-banana je skill pro agenty, díky kterému Claude Code a další programovací agenti vytvářejí a upravují obrázky pomocí modelů Google Nano Banana. Zároveň hlídá, kolik to stojí.

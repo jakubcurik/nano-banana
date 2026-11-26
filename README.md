@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="132" alt="nano-banana logo: a yellow banana with a small price tag on a navy square">
+  <img src="assets/logo.png" width="132" alt="nano-banana logo: a glossy yellow banana character waving on a dark graphite square">
 </p>
 
 <h1 align="center">nano-banana</h1>
@@ -45,7 +45,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/hero.jpg" width="880" alt="A cartoon banana with round glasses paints a landscape on a small easel at a desk, next to a long paper receipt and a few gold coins. The title reads nano-banana.">
+  <img src="assets/hero.jpg" width="880" alt="A glossy 3D banana character paints a sunny landscape on a small easel, next to a long paper receipt and a few gold coins. The title reads nano-banana.">
 </p>
 
 nano-banana is an agent skill that lets Claude Code and other coding agents make and edit images with Google's Nano Banana models. It also keeps track of what that costs.

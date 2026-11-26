@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../assets/logo.png" width="132" alt="Logotipo de nano-banana: un plátano amarillo con una pequeña etiqueta de precio sobre un cuadrado azul marino">
+  <img src="../assets/logo.png" width="132" alt="Logotipo de nano-banana: un personaje de plátano amarillo brillante que saluda sobre un cuadrado gris grafito oscuro">
 </p>
 
 <h1 align="center">nano-banana</h1>
@@ -45,7 +45,7 @@
 </p>
 
 <p align="center">
-  <img src="../assets/hero.jpg" width="880" alt="Un plátano de dibujos animados con gafas redondas pinta un paisaje en un pequeño caballete sobre un escritorio, junto a un recibo de papel muy largo y unas cuantas monedas de oro. El título dice nano-banana.">
+  <img src="../assets/hero.jpg" width="880" alt="Un personaje de plátano 3D brillante pinta un paisaje soleado en un pequeño caballete, junto a un largo recibo de papel y unas monedas de oro. El título dice nano-banana.">
 </p>
 
 nano-banana es un skill para agentes que permite a Claude Code y a otros agentes de programación crear y editar imágenes con los modelos Nano Banana de Google. Además, lleva la cuenta de lo que cuesta.

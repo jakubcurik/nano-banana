@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../assets/logo.png" width="132" alt="nano-banana 로고: 남색 정사각형 위에 작은 가격표가 달린 노란 바나나">
+  <img src="../assets/logo.png" width="132" alt="nano-banana 로고: 짙은 흑연색 정사각형 위에서 손을 흔드는 윤기 나는 노란 바나나 캐릭터">
 </p>
 
 <h1 align="center">nano-banana</h1>
@@ -45,7 +45,7 @@
 </p>
 
 <p align="center">
-  <img src="../assets/hero.jpg" width="880" alt="동그란 안경을 쓴 만화 속 바나나가 책상 위 작은 이젤에 풍경화를 그리고 있고, 옆에는 긴 종이 영수증과 금화 몇 개가 놓여 있습니다. 제목은 nano-banana입니다.">
+  <img src="../assets/hero.jpg" width="880" alt="윤기 나는 3D 바나나 캐릭터가 작은 이젤에 햇살 가득한 풍경을 그리고 있고, 옆에는 긴 종이 영수증과 금화 몇 개가 있습니다. 제목은 nano-banana입니다.">
 </p>
 
 nano-banana는 Claude Code를 비롯한 코딩 에이전트가 Google의 Nano Banana 모델로 이미지를 만들고 편집할 수 있게 해 주는 에이전트 스킬입니다. 이때 드는 비용도 함께 추적합니다.

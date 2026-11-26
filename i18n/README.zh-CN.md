@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../assets/logo.png" width="132" alt="nano-banana 标志：深蓝色方块上一根带小价签的黄色香蕉">
+  <img src="../assets/logo.png" width="132" alt="nano-banana 标志：深石墨色方块上，一个挥手的亮黄色有光泽的香蕉角色">
 </p>
 
 <h1 align="center">nano-banana</h1>
@@ -45,7 +45,7 @@
 </p>
 
 <p align="center">
-  <img src="../assets/hero.jpg" width="880" alt="一根戴圆框眼镜的卡通香蕉坐在桌前，在小画架上画一幅风景画，旁边放着一张长长的纸质账单和几枚金币。标题写着 nano-banana。">
+  <img src="../assets/hero.jpg" width="880" alt="一个有光泽的 3D 香蕉角色在小画架上画一幅阳光明媚的风景，旁边是一长条纸质收据和几枚金币。标题是 nano-banana。">
 </p>
 
 nano-banana 是一个 agent skill，让 Claude Code 和其他编程 agent 可以用 Google 的 Nano Banana 模型生成和编辑图片，同时帮你记录花了多少钱。

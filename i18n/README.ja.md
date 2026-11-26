@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../assets/logo.png" width="132" alt="nano-banana のロゴ: 紺色の正方形の上に、小さな値札のついた黄色いバナナ">
+  <img src="../assets/logo.png" width="132" alt="nano-banana のロゴ：ダークグラファイト色の正方形の上で手を振る、つやのある黄色いバナナのキャラクター">
 </p>
 
 <h1 align="center">nano-banana</h1>
@@ -45,7 +45,7 @@
 </p>
 
 <p align="center">
-  <img src="../assets/hero.jpg" width="880" alt="丸いメガネをかけたマンガ風のバナナが、机の上の小さなイーゼルで風景画を描いている。隣には長い紙のレシートと数枚の金貨。タイトルは nano-banana。">
+  <img src="../assets/hero.jpg" width="880" alt="つやのある3Dバナナのキャラクターが小さなイーゼルに日差しの風景を描いていて、その横に長い紙のレシートと数枚の金貨があります。タイトルは nano-banana です。">
 </p>
 
 nano-banana は、Claude Code などのコーディングエージェントが Google の Nano Banana モデルで画像を作成・編集できるようにするエージェントスキルです。かかった費用も記録します。

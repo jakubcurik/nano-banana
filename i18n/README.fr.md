@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../assets/logo.png" width="132" alt="Logo nano-banana : une banane jaune avec une petite étiquette de prix sur un carré bleu marine">
+  <img src="../assets/logo.png" width="132" alt="Logo de nano-banana : un personnage de banane jaune brillante qui salue, sur un carré gris graphite foncé">
 </p>
 
 <h1 align="center">nano-banana</h1>
@@ -45,7 +45,7 @@
 </p>
 
 <p align="center">
-  <img src="../assets/hero.jpg" width="880" alt="Une banane de dessin animé avec des lunettes rondes peint un paysage sur un petit chevalet, posé sur un bureau à côté d'un long ticket de caisse et de quelques pièces d'or. Le titre indique nano-banana.">
+  <img src="../assets/hero.jpg" width="880" alt="Un personnage de banane 3D brillante peint un paysage ensoleillé sur un petit chevalet, à côté d'un long ticket de caisse et de quelques pièces d'or. Le titre indique nano-banana.">
 </p>
 
 nano-banana est un skill d'agent qui permet à Claude Code et à d'autres agents de code de créer et de modifier des images avec les modèles Nano Banana de Google. Il garde aussi un œil sur ce que ça coûte.
