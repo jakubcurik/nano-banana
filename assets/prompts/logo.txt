@@ -1,0 +1,3 @@
+# nano-banana 2.1 | 1K | 1:1 | 4 candidates, no 2 chosen | --format jpeg
+
+A flat vector app icon: one cheerful banana-yellow banana, gently curved, with a small round white price tag tied to its stem by a thin string. The tag shows only a simple coin-like circle symbol, with no letters and no digits. Banana yellow (#FFD54A) on a deep navy blue (#0F1B2D) rounded-square background, thick clean dark outlines, minimal soft shading, one subtle cream highlight. Centered composition with generous margin around the banana, crisp edges, friendly and simple, like a modern developer-tool logo. No text, no letters, no numbers.
