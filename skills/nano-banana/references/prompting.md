@@ -123,7 +123,7 @@ Describe the detail that must not change as precisely as you can.
 
 | Mistake | Better |
 |---|---|
-| `beetle, forest, 4k, realistic` | A full sentence: what, where, which light, which shot. |
+| `mug, kitchen, 4k, realistic` | A full sentence: what, where, which light, which shot. |
 | "no people, no text" | Describe the empty scene; for text use "No other text." |
 | Aspect ratio in the prompt ("make it 16:9") | The option `-a 16:9`. |
 | Generating again for a small change | `--follow-up` and "keep everything else the same". |
@@ -171,4 +171,4 @@ Community practice ([artsmart](https://artsmart.ai/blog/ai-image-prompts-photore
 - The composition instruction ("top of head just below the upper edge") was ignored by the model in JSON and in text alike, and a fifth of the ceiling stayed above the head. Fix it with a follow-up or by cropping.
 - The direction of light can flip (asked for from the left, came from the right). Check it and correct it with a follow-up.
 - Text written as a description of a real-life photo gave the most spontaneous result. JSON kept small details more precisely (straight hair, expression).
-- The same prompt sent again in 4K or portrait gave a different woman every time. A follow-up (`--follow-up -a 16:9`) kept face, hair, clothes, room and light and only painted in the surroundings.
+- The same prompt sent again in 4K or portrait gave a different person every time. A follow-up (`--follow-up -a 16:9`) kept face, hair, clothes, room and light and only painted in the surroundings.

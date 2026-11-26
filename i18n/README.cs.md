@@ -223,13 +223,3 @@ python -m unittest discover -s tests
 ## Licence
 
 [MIT](../LICENSE)
-
-## Vývoj hvězdiček
-
-<a href="https://www.star-history.com/jakubcurik/nano-banana#history">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=jakubcurik/nano-banana&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=jakubcurik/nano-banana&type=Date" />
-    <img alt="Graf vývoje počtu hvězdiček" src="https://api.star-history.com/chart?repos=jakubcurik/nano-banana&type=Date" />
-  </picture>
-</a>
