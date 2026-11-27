@@ -443,6 +443,41 @@ class FileTests(unittest.TestCase):
         self.assertIn("a-red-apple", path.name)
         self.assertEqual(path.read_bytes(), b"jpegdata")
 
+    def test_name_sets_the_file_name(self):
+        code, out, _ = RunTests.run_count(self, fake_client(image_response(1)), "--name", "Hero Banner")
+        self.assertEqual(code, 0)
+        self.assertRegex(next(self.dir.glob("*.png")).name, r"^\d{8}-\d{6}-hero-banner-1\.png$")
+
+    def test_save_image_never_overwrites(self):
+        fixed = generate.datetime(2026, 11, 28, 12, 0, 0)
+        with patch.object(generate, "datetime") as fake_now:
+            fake_now.now.return_value = fixed
+            first = generate.save_image(b"a", "image/png", "same", self.dir, 0)
+            second = generate.save_image(b"b", "image/png", "same", self.dir, 0)
+        self.assertNotEqual(first, second)
+        self.assertEqual(first.read_bytes(), b"a")
+
+    def test_default_folder_ignores_itself(self):
+        default = self.dir / "proj" / ".cache" / "nano-banana"
+        generate.prepare_out_dir(default, True)
+        self.assertEqual((default / ".gitignore").read_text(encoding="utf-8"), "*\n")
+        chosen = self.dir / "assets"
+        generate.prepare_out_dir(chosen, False)
+        self.assertFalse((chosen / ".gitignore").exists())
+        existing = self.dir / "existing"
+        existing.mkdir()
+        generate.prepare_out_dir(existing, True)  # only a folder the script creates gets one
+        self.assertFalse((existing / ".gitignore").exists())
+
+    def test_input_images_above_the_size_limit_are_refused(self):
+        big = self.dir / "big.png"
+        with open(big, "wb") as f:
+            f.truncate(generate.MAX_INPUT_BYTES // 2 + 1)
+        small_enough = generate.check(parse("x", "-i", str(big)), generate.MODELS["2.1"])
+        self.assertEqual(small_enough, [])
+        problems = generate.check(parse("x", "-i", str(big), "-i", str(big)), generate.MODELS["2.1"])
+        self.assertTrue(any("MB" in p for p in problems), problems)
+
     def test_follow_up_by_image_path_reads_the_sidecar(self):
         image = self.dir / "pick.png"
         image.write_bytes(b"x")

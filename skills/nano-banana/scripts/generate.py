@@ -42,6 +42,10 @@ CNB_URL = ("https://www.cnb.cz/cs/financni-trhy/devizovy-trh/kurzy-devizoveho-tr
 IMAGE_FORMATS = {"png": "image/png", "jpeg": "image/jpeg"}
 DEFAULT_MAX_COST = 0.50  # USD; above this the script stops until the user raises --max-cost
 DEFAULT_CURRENCY = "USD"
+DEFAULT_OUT = ".cache/nano-banana"
+# Google's own CLI caps inline input images at about 14 MB raw: a request body is limited to 20 MB
+# and base64 makes the images a third bigger.
+MAX_INPUT_BYTES = 14_000_000
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".txt"}
 CONFIG_FILE = Path.home() / ".config" / "nano-banana" / "config.json"
 
@@ -137,6 +141,13 @@ def check(a, model):
     for path in a.image:
         if not Path(path).is_file():
             errors.append(f"Input image not found: {path}")
+    total = sum(Path(p).stat().st_size for p in a.image if Path(p).is_file())
+    if total > MAX_INPUT_BYTES:
+        errors.append(f"The input images add up to {total / 1e6:.1f} MB, above the limit of about "
+                      f"{MAX_INPUT_BYTES / 1e6:.0f} MB for images sent with a request (20 MB per request after "
+                      "encoding). Make them smaller first: fewer pixels or JPEG.")
+    if a.name is not None and not re.search(r"[A-Za-z0-9]", a.name):
+        errors.append("--name needs at least one letter or digit.")
     if a.count < 1:
         errors.append("--count must be at least 1.")
     if a.max_cost < 0:
@@ -175,12 +186,30 @@ def cost_guard(usd, limit):
 
 # ---------- files ----------
 
-def save_image(data, mime, prompt, out_dir, index):
+def slugify(text):
+    return re.sub(r"[^a-z0-9]+", "-", text.lower())[:40].strip("-") or "image"
+
+
+def save_image(data, mime, label, out_dir, index):
+    """Write one image as <timestamp>-<slug of label>-<n>.<ext>, never over an existing file."""
     ext = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}.get(mime or "", ".png")
-    slug = re.sub(r"[^a-z0-9]+", "-", prompt.lower())[:40].strip("-") or "image"
-    path = out_dir / f"{datetime.now():%Y%m%d-%H%M%S}-{slug}-{index + 1}{ext}"
+    stem = f"{datetime.now():%Y%m%d-%H%M%S}-{slugify(label)}-{index + 1}"
+    path = out_dir / f"{stem}{ext}"
+    extra = 1
+    while path.exists():
+        extra += 1
+        path = out_dir / f"{stem}-{extra}{ext}"
     path.write_bytes(data if isinstance(data, bytes) else base64.b64decode(data))
     return path
+
+
+def prepare_out_dir(out_dir, is_default):
+    """Create the output folder. The default folder gets a .gitignore with `*`, so it ignores itself;
+    a folder chosen with -o may be a real project folder and is left alone."""
+    created = not out_dir.exists()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if created and is_default:
+        (out_dir / ".gitignore").write_text("*\n", encoding="utf-8")
 
 
 def save_sidecar(path, a, interaction_id=None, previous_id=None, suggestions=None, seconds=None, cost=None,
@@ -445,7 +474,9 @@ def build_parser():
                          "value the last result; or the path of a generated image (its .txt holds the ID); "
                          "or an interaction ID")
     ap.add_argument("-n", "--count", type=int, default=1, help="number of images (each one is billed)")
-    ap.add_argument("-o", "--out", default=".cache/nano-banana", help="output folder")
+    ap.add_argument("-o", "--out", default=DEFAULT_OUT,
+                    help=f"output folder (default {DEFAULT_OUT}, which gets a .gitignore that ignores it)")
+    ap.add_argument("--name", help="file-name stem for the images (default: the start of the prompt)")
     ap.add_argument("--format", choices=IMAGE_FORMATS, help="output file format (default: what the model returns)")
     ap.add_argument("--no-store", action="store_true",
                     help="ask Google not to store the interaction (disables --follow-up on this result)")
@@ -498,13 +529,13 @@ def main(argv=None):
     from google import genai
 
     client = genai.Client(api_key=api_key())
-    out_dir.mkdir(parents=True, exist_ok=True)
+    prepare_out_dir(out_dir, a.out == DEFAULT_OUT)
     images = load_images(a.image)
 
     if a.batch:
         saved = []
         for data, mime in run_batch(client, a, model, images):
-            saved.append(save_image(data, mime, a.prompt, out_dir, len(saved)))
+            saved.append(save_image(data, mime, a.name or a.prompt, out_dir, len(saved)))
             save_sidecar(saved[-1], a)
             print(f"Saved: {saved[-1]}")
         if not saved:
@@ -594,7 +625,7 @@ def run_interactions(client, a, model, images, previous_id, out_dir, fx, estimat
         _, costs = response_cost(response, model)
         call_usd = sum(costs.values()) if costs else None
         for data, mime in results:
-            path = save_image(data, mime, a.prompt, out_dir, len(saved))
+            path = save_image(data, mime, a.name or a.prompt, out_dir, len(saved))
             save_sidecar(path, a, response.id, previous_id, suggestions, seconds, call_usd)
             saved.append(path)
             print(f"Saved: {path}")
