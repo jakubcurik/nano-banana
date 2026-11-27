@@ -11,9 +11,9 @@
 <p align="center">
   <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml"><img alt="测试" src="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml/badge.svg?branch=main"></a>
   <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml"><img alt="校验" src="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml/badge.svg?branch=main"></a>
-  <a href="https://github.com/jakubcurik/nano-banana/releases"><img alt="版本" src="https://flat.badgen.net/github/release/jakubcurik/nano-banana?label=release&color=ffd54a&labelColor=0f1b2d"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/releases"><img alt="版本" src="../assets/badges/release.svg"></a>
   <a href="../LICENSE"><img alt="许可证：MIT" src="../assets/badges/license-mit.svg"></a>
-  <a href="https://github.com/jakubcurik/nano-banana/stargazers"><img alt="Star 数" src="https://flat.badgen.net/github/stars/jakubcurik/nano-banana?label=stars&color=ffd54a&labelColor=0f1b2d"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/stargazers"><img alt="Star 数" src="../assets/badges/stars.svg"></a>
 </p>
 
 <p align="center">

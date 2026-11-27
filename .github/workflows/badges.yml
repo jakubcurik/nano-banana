@@ -1,0 +1,32 @@
+name: Badges
+
+on:
+  release:
+    types: [published]
+  watch:
+    types: [started]
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  badges:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Refresh the release and stars badges
+        run: python .github/scripts/make_badges.py --repo ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit changed badges
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/badges
+          git diff --cached --quiet || (git commit -m "chore: Update badges" && git push)
