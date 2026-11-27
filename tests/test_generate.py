@@ -7,7 +7,7 @@ import importlib.util
 import io
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -199,6 +199,87 @@ class CostTests(unittest.TestCase):
         self.assertIn("Real cost: 0.0411 USD", out.getvalue())
         with redirect_stdout(io.StringIO()):
             self.assertIsNone(generate.print_usage(interaction(), generate.MODELS["2.1"], None, "USD"))
+
+
+PNG_B64 = base64.b64encode(b"\x89PNG fake").decode()
+
+
+def image_response(n):
+    return interaction([block("model_output", content=[block("image", data=PNG_B64, mime_type="image/png")])],
+                       id=f"v1_{n}", usage=interaction_usage())
+
+
+class FakeInteractions:
+    """Stands in for client.interactions: returns or raises the queued outcomes in order."""
+
+    def __init__(self, *outcomes):
+        self.outcomes = list(outcomes)
+        self.calls = []
+        self.deleted = []
+
+    def create(self, **params):
+        self.calls.append(params)
+        outcome = self.outcomes.pop(0)
+        if isinstance(outcome, BaseException):
+            raise outcome
+        return outcome
+
+    def delete(self, id):
+        self.deleted.append(id)
+
+
+def fake_client(*outcomes):
+    return SimpleNamespace(interactions=FakeInteractions(*outcomes))
+
+
+class RunTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def run_count(self, client, *argv):
+        args = parse("A red apple", *argv)
+        model = generate.MODELS[args.model]
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            code = generate.run_interactions(client, args, model, [], None, self.dir, None,
+                                             generate.estimate_usd(args, model))
+        return code, out.getvalue(), err.getvalue()
+
+    def test_all_images_saved(self):
+        code, out, _ = self.run_count(fake_client(image_response(1), image_response(2)), "-n", "2")
+        self.assertEqual(code, 0)
+        self.assertEqual(out.count("Saved: "), 2)
+        self.assertIn("Total for this run:", out)
+        self.assertIn("Done: 2 of 2 images saved.", out)
+        self.assertEqual((self.dir / generate.LAST_ID_FILE).read_text(encoding="utf-8"), "v1_2")
+
+    def test_failure_keeps_earlier_images_and_stops(self):
+        client = fake_client(image_response(1), image_response(2), RuntimeError("boom"), image_response(4))
+        code, out, err = self.run_count(client, "-n", "4")
+        self.assertEqual(code, 1)
+        self.assertEqual(len(client.interactions.calls), 3)  # stopped after the failure
+        self.assertEqual(len(list(self.dir.glob("*.png"))), 2)
+        first_saved = out.index("Saved: ")
+        self.assertLess(first_saved, out.index("Real cost"))  # printed as soon as the file exists
+        self.assertIn("Image 3 of 4 failed: RuntimeError: boom", err)
+        self.assertIn("1 more image(s) were not attempted", err)
+        self.assertIn("2 of 4 images saved", err)
+
+    def test_no_image_is_a_problem_but_the_run_goes_on(self):
+        refused = interaction([], id="v1_x", output_text="I can't make that.", usage=interaction_usage(image=0))
+        code, out, err = self.run_count(fake_client(refused, image_response(2)), "-n", "2")
+        self.assertEqual(code, 1)
+        self.assertIn("returned no image", err)
+        self.assertEqual(out.count("Saved: "), 2)  # once when saved, once in the summary
+
+    def test_interrupt_ends_cleanly(self):
+        code, _, err = self.run_count(fake_client(KeyboardInterrupt()))
+        self.assertEqual(code, 130)
+        self.assertIn("interrupted", err)
 
 
 class FileTests(unittest.TestCase):

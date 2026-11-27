@@ -403,40 +403,91 @@ def main():
         else:
             sys.exit(f"Nothing to follow up on: {last_id_file} is missing.")
 
-    saved = []
-    total_usd = 0.0
     if a.batch:
+        saved = []
         for data, mime in run_batch(client, a, model, images):
             saved.append(save_image(data, mime, a.prompt, out_dir, len(saved)))
             save_sidecar(saved[-1], a)
-    else:
-        for i in range(a.count):
-            response = interact(client, a, model, images, previous_id)
-            results = images_from_interaction(response)
-            if not results:
-                reason = response.errors or response.output_text or response.status
-                print(f"Image {i + 1}: the model returned no image ({reason}).", file=sys.stderr)
-            suggestions = suggestions_from_interaction(response) if a.search else None
-            for data, mime in results:
-                saved.append(save_image(data, mime, a.prompt, out_dir, len(saved)))
-                save_sidecar(saved[-1], a, response.id, previous_id, suggestions)
-            if response.output_text:
-                print(f"Model said: {response.output_text.strip()}")
-            if suggestions:
-                print("Search suggestions were saved next to the image (Google requires showing them "
-                      "if you publish grounded output).")
-            if response.id and not a.no_store:
-                last_id_file.write_text(response.id, encoding="utf-8")
-                print(f"Interaction ID: {response.id} (continue with --follow-up)")
-            total_usd += print_usage(response, model, fx, a.currency) or 0.0
-        if a.count > 1:
-            print(f"Total for this run: {money(total_usd, fx, a.currency)} ({a.count} calls, estimate was "
-                  f"{usd:.4f} USD for the images alone)")
+            print(f"Saved: {saved[-1]}")
+        if not saved:
+            sys.exit("No image was produced.")
+        return
+    sys.exit(run_interactions(client, a, model, images, previous_id, out_dir, fx, usd))
 
+
+def describe(exc):
+    """One line about an exception, without the traceback."""
+    text = " ".join(str(exc).split())
+    return f"{type(exc).__name__}: {text[:500]}" if text else type(exc).__name__
+
+
+def run_interactions(client, a, model, images, previous_id, out_dir, fx, estimate):
+    """Make a.count calls and return the exit code.
+
+    Every image is saved and printed as soon as it arrives, so a failure in call 3 of 4 does not
+    hide images 1 and 2. The first API error stops the run: the remaining calls would most likely
+    fail the same way, and each uncertain failure may have been billed.
+    """
+    last_id_file = out_dir / LAST_ID_FILE
+    saved, problems = [], []
+    total_usd = 0.0
+    attempted = 0
+    interrupted = False
+    for i in range(a.count):
+        label = f"Image {i + 1} of {a.count}" if a.count > 1 else "Image"
+        attempted += 1
+        try:
+            response = interact(client, a, model, images, previous_id)
+        except KeyboardInterrupt:
+            problems.append(f"{label}: interrupted while waiting for the API. "
+                            "The request may still be generated and billed.")
+            interrupted = True
+            break
+        except Exception as exc:
+            print(f"{label} failed: {describe(exc)}", file=sys.stderr)
+            problems.append(f"{label} failed: {describe(exc)}")
+            break
+        results = images_from_interaction(response)
+        suggestions = suggestions_from_interaction(response) if a.search else None
+        for data, mime in results:
+            path = save_image(data, mime, a.prompt, out_dir, len(saved))
+            save_sidecar(path, a, response.id, previous_id, suggestions)
+            saved.append(path)
+            print(f"Saved: {path}")
+        if not results:
+            reason = response.errors or response.output_text or response.status
+            print(f"{label}: the model returned no image ({reason}).", file=sys.stderr)
+            problems.append(f"{label}: the model returned no image ({reason}).")
+        if response.output_text:
+            print(f"Model said: {response.output_text.strip()}")
+        if suggestions:
+            print("Search suggestions were saved next to the image (Google requires showing them "
+                  "if you publish grounded output).")
+        if response.id and not a.no_store:
+            last_id_file.write_text(response.id, encoding="utf-8")
+            print(f"Interaction ID: {response.id} (continue with --follow-up)")
+        total_usd += print_usage(response, model, fx, a.currency) or 0.0
+    if a.count > 1:
+        print(f"Total for this run: {money(total_usd, fx, a.currency)} (estimate was {estimate:.4f} USD "
+              "for the images alone)")
+    return summarize(saved, problems, a.count, a.count - attempted, interrupted)
+
+
+def summarize(saved, problems, wanted, skipped, interrupted=False):
+    """Print the closing summary and return the exit code (0 only when every image arrived)."""
+    if not problems and len(saved) >= wanted:
+        if wanted > 1:
+            print(f"Done: {len(saved)} of {wanted} images saved.")
+        return 0
+    print(f"Finished with problems: {len(saved)} of {wanted} images saved.", file=sys.stderr)
+    for problem in problems:
+        print(f"- {problem}", file=sys.stderr)
+    if skipped:
+        print(f"- {skipped} more image(s) were not attempted; nothing was sent or billed for them.",
+              file=sys.stderr)
     for path in saved:
         print(f"Saved: {path}")
-    if not saved:
-        sys.exit("No image was produced.")
+    return 130 if interrupted else 1
 
 
 if __name__ == "__main__":
