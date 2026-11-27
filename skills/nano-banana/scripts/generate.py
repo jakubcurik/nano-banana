@@ -10,7 +10,8 @@ Run it with uv, which installs google-genai on the fly:
 
 Regular generation uses the Interactions API (client.interactions.create), which
 Google recommends for the Nano Banana models. --batch uses the Batch API, which
-still takes the generateContent format.
+still takes the generateContent format; a submitted job is recorded in the output
+folder (batch-jobs.json) and collected with --batch-result, in the same run or later.
 
 The API key is read from GEMINI_API_KEY (or GOOGLE_API_KEY), otherwise from
 ~/.config/nano-banana/api-key.
@@ -46,6 +47,10 @@ DEFAULT_OUT = ".cache/nano-banana"
 # Google's own CLI caps inline input images at about 14 MB raw: a request body is limited to 20 MB
 # and base64 makes the images a third bigger.
 MAX_INPUT_BYTES = 14_000_000
+BATCH_FILE = "batch-jobs.json"
+DEFAULT_WAIT_MINUTES = 8  # stays under the 10-minute limit many agents put on one shell call
+POLL_SECONDS = 20
+FINAL_STATES = {"JOB_STATE_SUCCEEDED", "JOB_STATE_FAILED", "JOB_STATE_CANCELLED", "JOB_STATE_EXPIRED"}
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".txt"}
 CONFIG_FILE = Path.home() / ".config" / "nano-banana" / "config.json"
 
@@ -152,6 +157,8 @@ def check(a, model):
         errors.append("--count must be at least 1.")
     if a.max_cost < 0:
         errors.append("--max-cost cannot be negative.")
+    if a.wait < 0:
+        errors.append("--wait cannot be negative.")
     if a.batch:
         if a.follow_up:
             errors.append("--follow-up cannot be combined with --batch.")
@@ -432,27 +439,190 @@ def images_from_generate_content(response):
     return images
 
 
-def run_batch(client, a, model, images):
-    requests = [batch_request(a, images) for _ in range(a.count)]
-    job = client.batches.create(model=model["id"], src=requests, config={"display_name": "nano-banana"})
-    print(f"Batch job: {job.name}. Waiting for the result (checking every 30 s, Ctrl+C stops waiting; "
-          "the job keeps running and can take up to 24 h)...")
-    final_states = ("JOB_STATE_SUCCEEDED", "JOB_STATE_FAILED", "JOB_STATE_CANCELLED", "JOB_STATE_EXPIRED")
+def job_state(job):
+    state = getattr(job, "state", None)
+    return getattr(state, "name", None) or (str(state) if state else "JOB_STATE_UNSPECIFIED")
+
+
+def load_batch_records(out_dir):
+    """The batch jobs submitted into this output folder, oldest first."""
+    path = Path(out_dir) / BATCH_FILE
+    if not path.is_file():
+        return []
+    try:
+        records = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        sys.exit(f"{path} is damaged: {exc}")
+    return records if isinstance(records, list) else []
+
+
+def save_batch_records(out_dir, records):
+    path = Path(out_dir) / BATCH_FILE
+    path.write_text(json.dumps(records, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def record_batch(out_dir, job_name, a, estimate):
+    """Remember a submitted job, so a later run can collect it with --batch-result."""
+    records = load_batch_records(out_dir)
+    records.append({
+        "job": job_name, "submitted": datetime.now().isoformat(timespec="seconds"),
+        "model": a.model, "size": a.size, "aspect": a.aspect, "thinking": a.thinking, "search": a.search,
+        "count": a.count, "inputs": [Path(p).name for p in a.image], "name": a.name, "prompt": a.prompt,
+        "estimate_usd": round(estimate, 4), "state": "submitted", "collected": None, "saved": [],
+    })
+    save_batch_records(out_dir, records)
+
+
+def find_batch_record(records, ref):
+    """The record for "last" or a job name (with or without the "batches/" prefix), or None."""
+    if ref == "last":
+        return records[-1] if records else None
+    short = ref.split("/")[-1]
+    return next((r for r in reversed(records) if r.get("job", "").split("/")[-1] == short), None)
+
+
+def collect_command(name, out_dir):
+    script = Path(__file__).resolve()
+    return f'uv run --script "{script}" --batch-result {name} -o "{out_dir}"'
+
+
+def wait_for_batch(client, name, minutes, sleep=None, clock=None):
+    """Poll the job until it ends or `minutes` pass; return its last state."""
+    sleep, clock = sleep or time.sleep, clock or time.monotonic
+    deadline = clock() + minutes * 60
     while True:
-        job = client.batches.get(name=job.name)
-        state = job.state.name if job.state else ""
-        if state in final_states:
-            break
-        time.sleep(30)
+        state = job_state(client.batches.get(name=name))
+        remaining = deadline - clock()
+        if state in FINAL_STATES or remaining <= 0:
+            return state
+        sleep(min(POLL_SECONDS, remaining))
+
+
+def run_batch(client, a, model, images, out_dir, estimate, fx):
+    """Submit a batch job, record it, wait at most --wait minutes, and collect it if it is done."""
+    requests = [batch_request(a, images) for _ in range(a.count)]
+    try:
+        job = client.batches.create(model=model["id"], src=requests,
+                                    config={"display_name": f"nano-banana {slugify(a.name or a.prompt)}"})
+    except Exception as exc:
+        print(f"Submitting the batch job failed: {describe(exc)}", file=sys.stderr)
+        print(f"Retry: {classify_error(exc)[1]}", file=sys.stderr)
+        return 1
+    record_batch(out_dir, job.name, a, estimate)
+    print(f"Batch job submitted: {job.name} (recorded in {Path(out_dir) / BATCH_FILE})")
+    later = f"Collect the images later with:\n  {collect_command(job.name, out_dir)}"
+    if a.wait <= 0:
+        print(f"Not waiting (--wait 0). A batch job can take up to 24 hours. {later}")
+        return 0
+    print(f"Waiting up to {a.wait:g} min for it (checking every {POLL_SECONDS} s; Ctrl+C stops waiting, "
+          "the job keeps running)...")
+    try:
+        state = wait_for_batch(client, job.name, a.wait)
+    except KeyboardInterrupt:
+        print(f"Stopped waiting. The job keeps running at Google and is billed when it finishes. {later}",
+              file=sys.stderr)
+        return 130
+    if state not in FINAL_STATES:
+        print(f"The job is still {state} after {a.wait:g} min, which is normal: a batch job can take up to "
+              f"24 hours. {later}")
+        return 0
+    return collect_batch(client, out_dir, job.name, fx, a.currency)
+
+
+def model_key_for(model_id):
+    return next((key for key, m in MODELS.items() if str(model_id or "").endswith(m["id"])), None)
+
+
+def batch_minutes(job):
+    """Minutes from submission to the end of the job by Google's own timestamps, or None."""
+    start, end = getattr(job, "create_time", None), getattr(job, "end_time", None)
+    try:
+        return (end - start).total_seconds() / 60
+    except TypeError:
+        return None
+
+
+def collect_batch(client, out_dir, ref, fx, currency):
+    """Save the images of a finished batch job, or report its state. Returns the exit code.
+
+    A job is collected only once: a second call lists the files saved the first time instead of
+    writing them again (unless those files are gone).
+    """
+    out_dir = Path(out_dir)
+    records = load_batch_records(out_dir)
+    record = find_batch_record(records, ref)
+    if record is None and ref == "last":
+        sys.exit(f"No batch job is recorded in {out_dir / BATCH_FILE}. Pass the job name, or the -o folder "
+                 "that was used when the job was submitted.")
+    name = record["job"] if record else (ref if ref.startswith("batches/") else f"batches/{ref}")
+    if record and record.get("collected"):
+        existing = [p for p in record.get("saved", []) if Path(p).is_file()]
+        if existing or not record.get("saved"):
+            print(f"Batch job {name} was already collected on {record['collected']}; nothing was saved again.")
+            for path in existing:
+                print(f"Saved earlier: {path}")
+            return 0
+        print(f"Batch job {name} was collected before, but its files are gone; saving them again.")
+    try:
+        job = client.batches.get(name=name)
+    except Exception as exc:
+        print(f"Could not look up batch job {name}: {describe(exc)}", file=sys.stderr)
+        return 1
+    state = job_state(job)
+    if record is None:
+        record = {"job": name, "submitted": None, "model": model_key_for(getattr(job, "model", None)),
+                  "collected": None, "saved": []}
+        records.append(record)
+    record["state"] = state
+    if state not in FINAL_STATES:
+        save_batch_records(out_dir, records)
+        submitted = f", submitted {record['submitted']}" if record.get("submitted") else ""
+        print(f"Batch job {name} is not finished yet ({state}{submitted}). Nothing to collect yet; try again "
+              "later, a batch job can take up to 24 hours.")
+        return 0
     if state != "JOB_STATE_SUCCEEDED":
-        sys.exit(f"Batch job ended with state {state}: {job.error}")
-    results = []
-    for response in job.dest.inlined_responses or []:
-        if response.error:
-            print(f"One request failed: {response.error}", file=sys.stderr)
+        save_batch_records(out_dir, records)
+        print(f"Batch job {name} ended with {state}: {getattr(job, 'error', None)}. There is nothing to collect.",
+              file=sys.stderr)
+        return 1
+
+    model = MODELS.get(record.get("model"))
+    a = argparse.Namespace(
+        model=record.get("model") or "unknown", size=record.get("size") or "size unknown",
+        aspect=record.get("aspect"), thinking=record.get("thinking"), search=record.get("search"),
+        image=record.get("inputs") or [], name=record.get("name"),
+        prompt=record.get("prompt") or "(prompt not recorded: the job was submitted into another folder)")
+    minutes = batch_minutes(job)
+    print(f"Batch job {name} has finished" + (f"; Google took {minutes:.1f} min from submission to the end."
+                                                if minutes is not None else "."))
+    responses = getattr(getattr(job, "dest", None), "inlined_responses", None) or []
+    saved, problems, total_usd = [], [], 0.0
+    for i, item in enumerate(responses):
+        label = f"Request {i + 1} of {len(responses)}" if len(responses) > 1 else "Request"
+        if getattr(item, "error", None):
+            problems.append(f"{label} failed: {item.error}")
+            print(f"{label} failed: {item.error}", file=sys.stderr)
             continue
-        results += images_from_generate_content(response.response)
-    return results
+        response = getattr(item, "response", None)
+        results = images_from_generate_content(response) if response is not None else []
+        counts, costs = response_cost(response, model, batch=True) if model and response is not None else (None, None)
+        call_usd = sum(costs.values()) if costs else None
+        total_usd += call_usd or 0.0
+        for data, mime in results:
+            path = save_image(data, mime, a.name or a.prompt, out_dir, len(saved))
+            save_sidecar(path, a, batch_job=name, cost=call_usd)
+            saved.append(path)
+            print(f"Saved: {path}")
+        if counts:
+            print(cost_line(counts, costs, fx, currency))
+        if not results:
+            problems.append(f"{label}: the response holds no image.")
+    if len(responses) > 1:
+        print(f"Total for this batch: {money(total_usd, fx, currency)}")
+    record["collected"] = datetime.now().isoformat(timespec="seconds")
+    record["saved"] = [str(p.resolve()) for p in saved]
+    save_batch_records(out_dir, records)
+    return summarize(saved, problems, record.get("count") or len(responses), 0)
 
 
 # ---------- main ----------
@@ -483,7 +653,14 @@ def build_parser():
     ap.add_argument("--delete", metavar="IMAGE|ID",
                     help="delete a stored interaction at Google (an image path, an interaction ID, or 'last'); "
                          "generates nothing")
-    ap.add_argument("--batch", action="store_true", help="half price, the result can take up to 24 h")
+    ap.add_argument("--batch", action="store_true",
+                    help="half price, the result can take up to 24 h; the job is recorded in the output folder")
+    ap.add_argument("--wait", type=float, default=DEFAULT_WAIT_MINUTES, metavar="MINUTES",
+                    help=f"with --batch: wait at most this long for the result (default {DEFAULT_WAIT_MINUTES}, "
+                         "0 = submit and exit), then collect it later with --batch-result")
+    ap.add_argument("--batch-result", nargs="?", const="last", metavar="JOB",
+                    help="collect a batch job submitted earlier (default: the last one recorded in the output "
+                         "folder): saves its images if it is done, otherwise reports its state")
     ap.add_argument("--estimate", action="store_true", help="only print the price estimate, generate nothing")
     ap.add_argument("--max-cost", type=float, metavar="USD",
                     help="stop before calling the API when the estimate is above this (default "
@@ -499,9 +676,16 @@ def main(argv=None):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
     a = apply_settings(build_parser().parse_args(argv))
+    if a.delete and a.batch_result:
+        sys.exit("Use --delete and --batch-result in separate runs.")
     if a.delete:
         interaction_id = resolve_interaction(a.delete, Path(a.out))
         sys.exit(delete_interaction(make_client(), interaction_id, a.delete, Path(a.out)))
+    if a.batch_result:
+        fx = fx_rate(a.currency)
+        client = make_client()
+        prepare_out_dir(Path(a.out), a.out == DEFAULT_OUT)
+        sys.exit(collect_batch(client, Path(a.out), a.batch_result, fx, a.currency))
     if a.prompt_file:
         a.prompt = Path(a.prompt_file).read_text(encoding="utf-8").strip()
     a.size = "512" if a.size.lower() in ("512", "0.5k") else a.size.upper()
@@ -537,14 +721,7 @@ def main(argv=None):
     images = load_images(a.image)
 
     if a.batch:
-        saved = []
-        for data, mime in run_batch(client, a, model, images):
-            saved.append(save_image(data, mime, a.name or a.prompt, out_dir, len(saved)))
-            save_sidecar(saved[-1], a)
-            print(f"Saved: {saved[-1]}")
-        if not saved:
-            sys.exit("No image was produced.")
-        return
+        sys.exit(run_batch(client, a, model, images, out_dir, usd, fx))
     sys.exit(run_interactions(client, a, model, images, previous_id, out_dir, fx, usd))
 
 

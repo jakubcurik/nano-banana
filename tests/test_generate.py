@@ -429,6 +429,127 @@ class ErrorClassificationTests(unittest.TestCase):
         self.assertIn("Retry: The API rejected the request (400)", err.getvalue())
 
 
+def batch_job(state, responses=(), name="batches/job1"):
+    return SimpleNamespace(name=name, state=SimpleNamespace(name=state), model="models/gemini-nano-banana-2.1",
+                           error=None, dest=SimpleNamespace(inlined_responses=list(responses)),
+                           create_time=generate.datetime(2026, 11, 28, 10, 0), end_time=generate.datetime(2026, 11, 28, 10, 3))
+
+
+def batch_item(data=b"\x89PNG batch"):
+    usage = SimpleNamespace(prompt_token_count=12, thoughts_token_count=400, candidates_token_count=1120,
+                            candidates_tokens_details=[SimpleNamespace(modality="IMAGE", token_count=1120)])
+    part = SimpleNamespace(thought=None, inline_data=SimpleNamespace(data=data, mime_type="image/png"))
+    return SimpleNamespace(error=None, response=gc_response([part], usage))
+
+
+class FakeBatches:
+    def __init__(self, *states):
+        self.states = list(states)
+        self.created = []
+
+    def create(self, model, src, config):
+        self.created.append((model, src, config))
+        return SimpleNamespace(name="batches/job1")
+
+    def get(self, name):
+        state = self.states.pop(0) if len(self.states) > 1 else self.states[0]
+        return state if isinstance(state, SimpleNamespace) else batch_job(state)
+
+
+class BatchTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def submit(self, client, *argv):
+        args = parse("A banner", "--batch", "--name", "banner", *argv)
+        model = generate.MODELS[args.model]
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err), patch.object(generate.time, "sleep"):
+            code = generate.run_batch(client, args, model, [], self.dir, generate.estimate_usd(args, model), None)
+        return code, out.getvalue(), err.getvalue()
+
+    def collect(self, client, ref="last"):
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            code = generate.collect_batch(client, self.dir, ref, None, "USD")
+        return code, out.getvalue(), err.getvalue()
+
+    def test_submit_without_waiting_records_the_job(self):
+        client = SimpleNamespace(batches=FakeBatches("JOB_STATE_PENDING"))
+        code, out, _ = self.submit(client, "--wait", "0", "-n", "2")
+        self.assertEqual(code, 0)
+        self.assertIn("--batch-result batches/job1", out)
+        record = generate.load_batch_records(self.dir)[-1]
+        self.assertEqual((record["job"], record["prompt"], record["count"], record["name"]),
+                         ("batches/job1", "A banner", 2, "banner"))
+        self.assertEqual(len(client.batches.created[0][1]), 2)  # one request per image
+
+    def test_wait_gives_up_after_the_limit(self):
+        ticks = iter(range(0, 10000, 30))
+        client = SimpleNamespace(batches=FakeBatches("JOB_STATE_RUNNING"))
+        state = generate.wait_for_batch(client, "batches/job1", 2, sleep=lambda s: None, clock=lambda: next(ticks))
+        self.assertEqual(state, "JOB_STATE_RUNNING")
+
+    def test_interrupted_wait_ends_cleanly(self):
+        client = SimpleNamespace(batches=FakeBatches("JOB_STATE_RUNNING"))
+        with patch.object(generate, "wait_for_batch", side_effect=KeyboardInterrupt):
+            code, _, err = self.submit(client)
+        self.assertEqual(code, 130)
+        self.assertIn("Stopped waiting", err)
+        self.assertIn("--batch-result batches/job1", err)
+
+    def test_finished_within_the_wait_is_collected_right_away(self):
+        done = batch_job("JOB_STATE_SUCCEEDED", [batch_item()])
+        client = SimpleNamespace(batches=FakeBatches("JOB_STATE_RUNNING", done))
+        code, out, _ = self.submit(client)
+        self.assertEqual(code, 0)
+        self.assertIn("Saved: ", out)
+        self.assertIn("Google took 3.0 min", out)
+
+    def test_collect_reports_a_running_job(self):
+        generate.record_batch(self.dir, "batches/job1", parse("x", "--batch"), 0.0168)
+        code, out, _ = self.collect(SimpleNamespace(batches=FakeBatches("JOB_STATE_RUNNING")))
+        self.assertEqual(code, 0)
+        self.assertIn("not finished yet (JOB_STATE_RUNNING", out)
+        self.assertEqual(list(self.dir.glob("*.png")), [])
+
+    def test_collect_saves_images_with_batch_cost_and_only_once(self):
+        generate.record_batch(self.dir, "batches/job1", parse("A banner", "--batch"), 0.0168)
+        done = batch_job("JOB_STATE_SUCCEEDED", [batch_item(), batch_item()])
+        client = SimpleNamespace(batches=FakeBatches(done))
+        code, out, _ = self.collect(client, "job1")
+        self.assertEqual(code, 0)
+        self.assertEqual(len(list(self.dir.glob("*.png"))), 2)
+        cost = (1120 * 30 + 400 * 7.5 + 12 * 1.5) / 1e6 / 2
+        self.assertIn(f"Real cost: {cost:.4f} USD", out)
+        self.assertIn("Total for this batch", out)
+        sidecar = next(self.dir.glob("*.txt")).read_text(encoding="utf-8")
+        self.assertIn("batch job batches/job1", sidecar)
+        self.assertIn("A banner", sidecar)
+        code, out, _ = self.collect(client)
+        self.assertEqual(code, 0)
+        self.assertIn("already collected", out)
+        self.assertEqual(len(list(self.dir.glob("*.png"))), 2)
+
+    def test_collect_a_failed_job(self):
+        generate.record_batch(self.dir, "batches/job1", parse("x", "--batch"), 0.0168)
+        code, _, err = self.collect(SimpleNamespace(batches=FakeBatches("JOB_STATE_FAILED")))
+        self.assertEqual(code, 1)
+        self.assertIn("JOB_STATE_FAILED", err)
+
+    def test_collect_needs_a_record_or_a_name(self):
+        with self.assertRaises(SystemExit):
+            self.collect(SimpleNamespace(batches=FakeBatches("JOB_STATE_RUNNING")))
+        done = batch_job("JOB_STATE_SUCCEEDED", [batch_item()], name="batches/other")
+        code, out, _ = self.collect(SimpleNamespace(batches=FakeBatches(done)), "other")
+        self.assertEqual(code, 0)
+        self.assertIn("Saved: ", out)  # unknown prompt, but the paid image is still saved
+
+
 class FileTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
