@@ -68,25 +68,37 @@ nano-banana 是一个 agent skill，让 Claude Code 和其他编程 agent 可以
 
 ## 示例图库
 
-除了文字和终端截图，这份 README 里的所有图片都是用这个 skill 生成的。prompt 在 [`assets/prompts`](../assets/prompts) 里。
+除了文字和终端截图，这份 README 里的所有图片都是用这个 skill 生成的。图中的每个人物、地点和物品都是 AI 生成的。提示词见 [`assets/prompts`](../assets/prompts)。
 
 <p align="center">
-  <img src="../assets/gallery/1-illustration.jpg" width="760" alt="一幅扁平插画：阳光窗边的木质台面上放着一杯冒着热气的咖啡和一个羊角面包，右侧留白用来放标题。">
+  <img src="../assets/gallery/photo-gallery-wall.jpg" width="266" alt="手机拍的照片：一根香蕉用银色胶带贴在白色画廊墙上，旁边是一张空白的白色卡片，背景虚化处有两位参观者在认真端详。">
+  <img src="../assets/gallery/photo-shopping-cart.jpg" width="266" alt="手机拍的照片：一根香蕉被红色安全带系在超市购物车的儿童座椅上。">
+  <img src="../assets/gallery/photo-car-seat.jpg" width="266" alt="从驾驶座拍的手机照片：一根香蕉笔直地坐在副驾驶座上，身上系着安全带。">
   <br>
-  <sub><b>文生图。</b>模型 2.1，2K，16:9，约 5 美分。</sub>
+  <sub><b>手机拍摄风格的照片。</b>一根香蕉被胶带贴在画廊墙上、系在购物车里、扣在汽车座椅上。Model 2.1，2K，3:4，每张约 5 美分。</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/2a-edit-before.jpg" width="372" alt="浅灰色摄影棚背景上的一只普通白色陶瓷马克杯。">
-  <img src="../assets/gallery/2b-edit-after.jpg" width="372" alt="同一只白色马克杯放在阳光窗边的质朴木桌上，旁边有一小碗咖啡豆。">
+  <img src="../assets/gallery/edit-before-night-flash.jpg" width="372" alt="夜里一名女子走过商店橱窗，被相机刺眼的闪光灯照亮，手里拿着一根剥了一半的香蕉，看向左边。">
+  <img src="../assets/gallery/edit-after-sunny-day.jpg" width="372" alt="同一张照片换成明亮的午后阳光和蓝天：同样的女子、姿势、香蕉和商店橱窗。">
   <br>
-  <sub><b>用 <code>--follow-up</code> 编辑。</b>同一只杯子，换了场景。模型 2.1，2K，每张约 5 美分。</sub>
+  <sub><b>用 <code>--image</code> 编辑。</b>一张夜间闪光灯拍的照片变成了阳光明媚的下午。除了光线，其他都没有变。Model 2.1，1K，约 3 美分。</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/3-poster-text.jpg" width="400" alt="一张极简风格的咖啡馆海报，扁平风格的咖啡杯上方写着 FRESH COFFEE，下面一行是 Open daily from 8 to 18。">
+  <img src="../assets/gallery/graphic-infographic.jpg" width="760" alt="一张标题为 Anatomy of a banana 的信息图：深色背景上一根光亮的香蕉，四个标签分别指向 Stem、Peel、Fruit 和 Tip。">
   <br>
-  <sub><b>图片中的文字。</b>模型 Pro，2K，4:5，约 13 美分。</sub>
+  <img src="../assets/gallery/graphic-poster.jpg" width="300" alt="一张复古旅行海报，写着 BANANA ISLAND 和 Visit the sunny side，画面中有一座香蕉形状的岛、棕榈树和日落时的帆船。">
+  <img src="../assets/gallery/graphic-vector.jpg" width="375" alt="一幅扁平矢量插画，香蕉由黄色和琥珀色的几何图形组成，背景是柔和的蓝绿色。">
+  <br>
+  <sub><b>图形。</b>一张信息图和一张文字海报用 Model Pro 生成（2K，每张约 13 美分），一张扁平矢量插画用 Model 2.1 生成（2K，约 5 美分）。</sub>
+</p>
+
+<p align="center">
+  <img src="../assets/gallery/mascot-hammock.jpg" width="372" alt="光亮的 3D 香蕉吉祥物戴着太阳镜，躺在热带海滩两棵棕榈树之间的吊床上休息。">
+  <img src="../assets/gallery/mascot-surf.jpg" width="372" alt="光亮的 3D 香蕉吉祥物踩着一块小冲浪板，在绿松石色的海浪上张开双臂保持平衡。">
+  <br>
+  <sub><b>同一个吉祥物，不同的场景</b>，用 <code>--follow-up</code> 生成。Model 2.1，1K，每张约 3 美分。</sub>
 </p>
 
 <a id="install"></a>

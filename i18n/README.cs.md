@@ -66,25 +66,37 @@ Je to skutečný běh. Obrázek ve 2K na výchozím modelu stojí asi pět ameri
 
 ## Galerie
 
-Kromě textů a snímku terminálu vzniklo pomocí tohoto skillu všechno, co v README vidíš. Prompty najdeš v [`assets/prompts`](../assets/prompts).
+Kromě textů a snímku terminálu vzniklo pomocí tohoto skillu všechno, co v README vidíš. Všichni lidé, místa a věci na obrázcích jsou vygenerované AI. Prompty najdeš v [`assets/prompts`](../assets/prompts).
 
 <p align="center">
-  <img src="../assets/gallery/1-illustration.jpg" width="760" alt="Plochá ilustrace parního hrnku s kávou a croissantu na dřevěném pultu u slunného okna, vpravo volné místo pro nadpis.">
+  <img src="../assets/gallery/photo-gallery-wall.jpg" width="266" alt="Fotka z telefonu: jeden banán přilepený stříbrnou lepicí páskou na bílé zdi galerie vedle prázdné bílé cedulky, v rozmazaném pozadí ho vážně studují dva návštěvníci.">
+  <img src="../assets/gallery/photo-shopping-cart.jpg" width="266" alt="Fotka z telefonu: banán připoutaný červeným bezpečnostním pásem v dětské sedačce nákupního vozíku v supermarketu.">
+  <img src="../assets/gallery/photo-car-seat.jpg" width="266" alt="Fotka z telefonu ze sedadla řidiče: banán sedí vzpřímeně na sedadle spolujezdce a přes něj je připnutý bezpečnostní pás.">
   <br>
-  <sub><b>Z textu na obrázek.</b> Model 2.1, 2K, 16:9, asi 5 centů.</sub>
+  <sub><b>Fotky jako ze snímku z telefonu.</b> Banán přilepený na zdi galerie, připoutaný v nákupním vozíku a připásaný v autě. Model 2.1, 2K, 3:4, asi 5 centů za obrázek.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/2a-edit-before.jpg" width="372" alt="Obyčejný bílý keramický hrnek na světle šedém ateliérovém pozadí.">
-  <img src="../assets/gallery/2b-edit-after.jpg" width="372" alt="Stejný bílý hrnek na rustikálním dřevěném stole u slunného okna, vedle misky kávových zrn.">
+  <img src="../assets/gallery/edit-before-night-flash.jpg" width="372" alt="Žena jde v noci kolem výlohy, osvětlená ostrým bleskem foťáku, drží napůl oloupaný banán a dívá se doleva.">
+  <img src="../assets/gallery/edit-after-sunny-day.jpg" width="372" alt="Stejná fotka v jasném odpoledním slunci pod modrou oblohou: stejná žena, póza, banán i výloha.">
   <br>
-  <sub><b>Úprava přes <code>--follow-up</code>.</b> Stejný hrnek, nová scéna. Model 2.1, 2K, asi 5 centů za obrázek.</sub>
+  <sub><b>Úprava přes <code>--image</code>.</b> Z fotky s bleskem v noci je slunečné odpoledne. Kromě světla zůstalo všechno stejné. Model 2.1, 1K, asi 3 centy.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/3-poster-text.jpg" width="400" alt="Minimalistický plakát kavárny s nápisem FRESH COFFEE nad plochým hrnkem kávy a řádkem Open daily from 8 to 18.">
+  <img src="../assets/gallery/graphic-infographic.jpg" width="760" alt="Infografika s nadpisem Anatomy of a banana: lesklý banán na tmavém pozadí se čtyřmi popisky, které ukazují na Stem, Peel, Fruit a Tip.">
   <br>
-  <sub><b>Text v obrázku.</b> Model Pro, 2K, 4:5, asi 13 centů.</sub>
+  <img src="../assets/gallery/graphic-poster.jpg" width="300" alt="Retro cestovní plakát s nápisy BANANA ISLAND a Visit the sunny side, s ostrovem ve tvaru banánu, palmami a plachetnicí při západu slunce.">
+  <img src="../assets/gallery/graphic-vector.jpg" width="375" alt="Plochá vektorová ilustrace banánu složeného z geometrických tvarů ve žluté a jantarové barvě na jemně tyrkysovém pozadí.">
+  <br>
+  <sub><b>Grafika.</b> Infografika a textový plakát na modelu Pro (2K, asi 13 centů za kus) a plochá vektorová ilustrace na modelu 2.1 (2K, asi 5 centů).</sub>
+</p>
+
+<p align="center">
+  <img src="../assets/gallery/mascot-hammock.jpg" width="372" alt="Lesklý 3D banánový maskot ve slunečních brýlích odpočívá v houpací síti mezi dvěma palmami na tropické pláži.">
+  <img src="../assets/gallery/mascot-surf.jpg" width="372" alt="Lesklý 3D banánový maskot jede na malém surfu po tyrkysové vlně s rozpaženýma rukama pro rovnováhu.">
+  <br>
+  <sub><b>Stejný maskot v nových scénách</b> přes <code>--follow-up</code>. Model 2.1, 1K, asi 3 centy za obrázek.</sub>
 </p>
 
 ## Instalace

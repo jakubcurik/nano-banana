@@ -68,25 +68,37 @@ C'est une vraie exécution. Une image en 2K avec le modèle par défaut coûte e
 
 ## Galerie
 
-À part le texte et la capture d'écran du terminal, toutes les images de ce README ont été faites avec le skill. Les prompts sont dans [`assets/prompts`](../assets/prompts).
+À part le texte et la capture d'écran du terminal, toutes les images de ce README ont été créées avec le skill. Toutes les personnes, tous les lieux et tous les objets qui y figurent sont générés par IA. Les prompts se trouvent dans [`assets/prompts`](../assets/prompts).
 
 <p align="center">
-  <img src="../assets/gallery/1-illustration.jpg" width="760" alt="Une illustration plate d'une tasse de café fumante et d'un croissant sur un comptoir en bois près d'une fenêtre ensoleillée, avec de la place libre à droite pour un titre.">
+  <img src="../assets/gallery/photo-gallery-wall.jpg" width="266" alt="Photo prise au smartphone d'une seule banane collée sur un mur blanc de galerie avec du ruban adhésif argenté, à côté d'un cartel blanc vide. À l'arrière-plan flou, deux visiteurs l'observent avec sérieux.">
+  <img src="../assets/gallery/photo-shopping-cart.jpg" width="266" alt="Photo prise au smartphone d'une banane attachée par une ceinture rouge dans le siège enfant d'un caddie de supermarché.">
+  <img src="../assets/gallery/photo-car-seat.jpg" width="266" alt="Photo prise au smartphone depuis le siège conducteur : une banane est assise bien droite sur le siège passager, la ceinture de sécurité bouclée par-dessus.">
   <br>
-  <sub><b>Texte vers image.</b> Modèle 2.1, 2K, 16:9, environ 5 cents.</sub>
+  <sub><b>Photos façon smartphone.</b> Une banane scotchée sur le mur d'une galerie, attachée dans un caddie et bouclée dans un siège auto. Model 2.1, 2K, 3:4, environ 5 cents par image.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/2a-edit-before.jpg" width="372" alt="Un simple mug en céramique blanche sur un fond de studio gris clair.">
-  <img src="../assets/gallery/2b-edit-after.jpg" width="372" alt="Le même mug blanc sur une table en bois rustique près d'une fenêtre ensoleillée, à côté d'un petit bol de grains de café.">
+  <img src="../assets/gallery/edit-before-night-flash.jpg" width="372" alt="Une femme passe de nuit devant une vitrine, éclairée par le flash brutal de l'appareil photo. Elle tient une banane à moitié pelée et regarde vers la gauche.">
+  <img src="../assets/gallery/edit-after-sunny-day.jpg" width="372" alt="La même photo en plein soleil de l'après-midi sous un ciel bleu : la même femme, la même pose, la même banane et la même vitrine.">
   <br>
-  <sub><b>Modification avec <code>--follow-up</code>.</b> Même mug, nouvelle scène. Modèle 2.1, 2K, environ 5 cents par image.</sub>
+  <sub><b>Retouche avec <code>--image</code>.</b> Une photo au flash prise de nuit est devenue un après-midi ensoleillé. Tout est resté identique, sauf la lumière. Model 2.1, 1K, environ 3 cents.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/3-poster-text.jpg" width="400" alt="Une affiche minimaliste de café avec l'inscription FRESH COFFEE au-dessus d'une tasse de café plate, et la ligne Open daily from 8 to 18.">
+  <img src="../assets/gallery/graphic-infographic.jpg" width="760" alt="Une infographie intitulée Anatomy of a banana : une banane brillante sur fond sombre avec quatre étiquettes qui pointent vers Stem, Peel, Fruit et Tip.">
   <br>
-  <sub><b>Texte dans une image.</b> Modèle Pro, 2K, 4:5, environ 13 cents.</sub>
+  <img src="../assets/gallery/graphic-poster.jpg" width="300" alt="Une affiche de voyage rétro avec les textes BANANA ISLAND et Visit the sunny side, une île en forme de banane, des palmiers et un voilier au coucher du soleil.">
+  <img src="../assets/gallery/graphic-vector.jpg" width="375" alt="Une illustration vectorielle plate d'une banane composée de formes géométriques jaunes et ambrées sur un fond turquoise doux.">
+  <br>
+  <sub><b>Graphismes.</b> Une infographie et une affiche de texte avec Model Pro (2K, environ 13 cents pièce), et une illustration vectorielle plate avec Model 2.1 (2K, environ 5 cents).</sub>
+</p>
+
+<p align="center">
+  <img src="../assets/gallery/mascot-hammock.jpg" width="372" alt="La mascotte banane 3D brillante, avec des lunettes de soleil, se détend dans un hamac entre deux palmiers sur une plage tropicale.">
+  <img src="../assets/gallery/mascot-surf.jpg" width="372" alt="La mascotte banane 3D brillante file sur une petite planche de surf sur une vague turquoise, les bras écartés pour garder l'équilibre.">
+  <br>
+  <sub><b>La même mascotte dans de nouvelles scènes</b> avec <code>--follow-up</code>. Model 2.1, 1K, environ 3 cents par image.</sub>
 </p>
 
 <a id="install"></a>

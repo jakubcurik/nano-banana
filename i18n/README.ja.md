@@ -68,25 +68,37 @@ nano-banana は、Claude Code などのコーディングエージェントが G
 
 ## ギャラリー
 
-文章とターミナルのスクリーンショットを除き、この README の画像はすべてこのスキルで作りました。プロンプトは [`assets/prompts`](../assets/prompts) にあります。
+テキストとターミナルのスクリーンショットを除き、このREADMEの画像はすべてこのスキルで作成しました。画像に写っている人物、場所、物はすべてAIが生成したものです。プロンプトは [`assets/prompts`](../assets/prompts) にあります。
 
 <p align="center">
-  <img src="../assets/gallery/1-illustration.jpg" width="760" alt="日当たりのよい窓辺の木のカウンターに置かれた、湯気の立つコーヒーカップとクロワッサンのフラットなイラスト。右側には見出し用の空きスペースがある。">
+  <img src="../assets/gallery/photo-gallery-wall.jpg" width="266" alt="白いギャラリーの壁に銀色のダクトテープで貼られた1本のバナナを、スマホで撮った写真です。隣には何も書かれていない白いカードがあり、ピントの合っていない背景で来場者2人が真剣に眺めています。">
+  <img src="../assets/gallery/photo-shopping-cart.jpg" width="266" alt="赤いシートベルトで、スーパーのショッピングカートの子ども用シートに固定されたバナナをスマホで撮った写真です。">
+  <img src="../assets/gallery/photo-car-seat.jpg" width="266" alt="運転席からスマホで撮った写真です。助手席にバナナがまっすぐ座り、シートベルトが締められています。">
   <br>
-  <sub><b>テキストから画像へ。</b> モデル 2.1、2K、16:9、約5セント。</sub>
+  <sub><b>スマホで撮ったような写真。</b>ギャラリーの壁にテープで貼られたバナナ、ショッピングカートにベルトで固定されたバナナ、車のシートにシートベルトで固定されたバナナです。Model 2.1、2K、3:4、1枚あたり約5セント。</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/2a-edit-before.jpg" width="372" alt="明るいグレーのスタジオ背景に置かれた、無地の白いセラミックのマグカップ。">
-  <img src="../assets/gallery/2b-edit-after.jpg" width="372" alt="日当たりのよい窓辺の素朴な木のテーブルに置かれた同じ白いマグカップ。隣には小さなボウルに入ったコーヒー豆。">
+  <img src="../assets/gallery/edit-before-night-flash.jpg" width="372" alt="夜、ショップのウィンドウの前を歩く女性が、カメラの強いフラッシュに照らされています。半分皮をむいたバナナを持ち、左を向いています。">
+  <img src="../assets/gallery/edit-after-sunny-day.jpg" width="372" alt="青空の下、午後の明るい日差しで撮った同じ写真です。同じ女性、同じポーズ、同じバナナ、同じショップのウィンドウです。">
   <br>
-  <sub><b><code>--follow-up</code> での編集。</b> 同じマグカップで、シーンだけ変更。モデル 2.1、2K、1枚あたり約5セント。</sub>
+  <sub><b><code>--image</code> での編集。</b>夜にフラッシュで撮った写真を、晴れた日の午後の写真に変えました。光以外はすべて同じままです。Model 2.1、1K、約3セント。</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/3-poster-text.jpg" width="400" alt="ミニマルなカフェのポスター。平らなコーヒーカップの上に FRESH COFFEE の文字があり、その下に Open daily from 8 to 18 の一行。">
+  <img src="../assets/gallery/graphic-infographic.jpg" width="760" alt="「Anatomy of a banana」というタイトルのインフォグラフィックです。暗い背景に光沢のあるバナナがあり、4つのラベルが Stem、Peel、Fruit、Tip を指しています。">
   <br>
-  <sub><b>画像の中の文字。</b> モデル Pro、2K、4:5、約13セント。</sub>
+  <img src="../assets/gallery/graphic-poster.jpg" width="300" alt="BANANA ISLAND と Visit the sunny side の文字が入ったレトロな旅行ポスターです。バナナの形をした島、ヤシの木、夕日の中のヨットが描かれています。">
+  <img src="../assets/gallery/graphic-vector.jpg" width="375" alt="黄色とアンバーの幾何学的な図形で作ったバナナのフラットなベクターイラストです。背景は柔らかいティールです。">
+  <br>
+  <sub><b>グラフィック。</b>インフォグラフィックとテキストポスターは Model Pro（2K、1枚あたり約13セント）、フラットなベクターイラストは Model 2.1（2K、約5セント）で作りました。</sub>
+</p>
+
+<p align="center">
+  <img src="../assets/gallery/mascot-hammock.jpg" width="372" alt="サングラスをかけた光沢のある3Dバナナのマスコットが、熱帯のビーチで2本のヤシの木の間のハンモックでくつろいでいます。">
+  <img src="../assets/gallery/mascot-surf.jpg" width="372" alt="光沢のある3Dバナナのマスコットが、ターコイズ色の波の上で小さなサーフボードに乗っています。バランスを取るために両腕を広げています。">
+  <br>
+  <sub><b>同じマスコットで新しいシーン。</b><code>--follow-up</code> を使いました。Model 2.1、1K、1枚あたり約3セント。</sub>
 </p>
 
 <a id="install"></a>

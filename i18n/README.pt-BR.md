@@ -68,25 +68,37 @@ Essa é uma execução real. Uma imagem em 2K no modelo padrão custa cerca de c
 
 ## Galeria
 
-Além do texto e da captura de tela do terminal, todas as imagens deste README foram feitas com a skill. Os prompts estão em [`assets/prompts`](../assets/prompts).
+Além do texto e da captura de tela do terminal, todas as imagens deste README foram feitas com a skill. Todas as pessoas, lugares e objetos nelas são gerados por IA. Os prompts estão em [`assets/prompts`](../assets/prompts).
 
 <p align="center">
-  <img src="../assets/gallery/1-illustration.jpg" width="760" alt="Uma ilustração plana de uma xícara de café fumegante e um croissant sobre um balcão de madeira ao lado de uma janela ensolarada, com espaço livre à direita para um título.">
+  <img src="../assets/gallery/photo-gallery-wall.jpg" width="266" alt="Foto de celular de uma única banana presa a uma parede branca de galeria com fita adesiva prateada, ao lado de um cartão branco em branco, enquanto dois visitantes ao fundo, fora de foco, a observam com seriedade.">
+  <img src="../assets/gallery/photo-shopping-cart.jpg" width="266" alt="Foto de celular de uma banana presa com um cinto vermelho na cadeirinha de criança de um carrinho de supermercado.">
+  <img src="../assets/gallery/photo-car-seat.jpg" width="266" alt="Foto de celular tirada do banco do motorista de uma banana sentada em pé no banco do passageiro, com o cinto de segurança afivelado sobre ela.">
   <br>
-  <sub><b>Texto para imagem.</b> Modelo 2.1, 2K, 16:9, cerca de 5 centavos.</sub>
+  <sub><b>Fotos no estilo de celular.</b> Uma banana colada com fita na parede de uma galeria, presa com cinto num carrinho de supermercado e com o cinto de segurança afivelado no banco de um carro. Model 2.1, 2K, 3:4, cerca de 5 centavos de dólar cada.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/2a-edit-before.jpg" width="372" alt="Uma caneca de cerâmica branca simples sobre um fundo de estúdio cinza-claro.">
-  <img src="../assets/gallery/2b-edit-after.jpg" width="372" alt="A mesma caneca branca sobre uma mesa de madeira rústica ao lado de uma janela ensolarada, junto de uma pequena tigela de grãos de café.">
+  <img src="../assets/gallery/edit-before-night-flash.jpg" width="372" alt="Uma mulher passa por uma vitrine à noite, iluminada pelo flash forte da câmera, segurando uma banana meio descascada e olhando para a esquerda.">
+  <img src="../assets/gallery/edit-after-sunny-day.jpg" width="372" alt="A mesma foto sob a luz forte da tarde e um céu azul: a mesma mulher, a mesma pose, a mesma banana e a mesma vitrine.">
   <br>
-  <sub><b>Edição com <code>--follow-up</code>.</b> A mesma caneca, uma nova cena. Modelo 2.1, 2K, cerca de 5 centavos por imagem.</sub>
+  <sub><b>Edição com <code>--image</code>.</b> Uma foto noturna com flash virou uma tarde ensolarada. Tudo, exceto a luz, continuou igual. Model 2.1, 1K, cerca de 3 centavos de dólar.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/3-poster-text.jpg" width="400" alt="Um pôster minimalista de cafeteria com o texto FRESH COFFEE acima de uma xícara de café plana, com a linha Open daily from 8 to 18.">
+  <img src="../assets/gallery/graphic-infographic.jpg" width="760" alt="Um infográfico intitulado Anatomy of a banana: uma banana brilhante sobre fundo escuro, com quatro rótulos apontando para Stem, Peel, Fruit e Tip.">
   <br>
-  <sub><b>Texto dentro da imagem.</b> Modelo Pro, 2K, 4:5, cerca de 13 centavos.</sub>
+  <img src="../assets/gallery/graphic-poster.jpg" width="300" alt="Um pôster de viagem retrô com os textos BANANA ISLAND e Visit the sunny side, com uma ilha em forma de banana, palmeiras e um veleiro ao pôr do sol.">
+  <img src="../assets/gallery/graphic-vector.jpg" width="375" alt="Uma ilustração vetorial plana de uma banana feita de formas geométricas em amarelo e âmbar sobre um fundo azul-petróleo suave.">
+  <br>
+  <sub><b>Gráficos.</b> Um infográfico e um pôster de texto no Model Pro (2K, cerca de 13 centavos de dólar cada) e uma ilustração vetorial plana no Model 2.1 (2K, cerca de 5 centavos de dólar).</sub>
+</p>
+
+<p align="center">
+  <img src="../assets/gallery/mascot-hammock.jpg" width="372" alt="O mascote banana 3D brilhante, de óculos escuros, relaxando numa rede entre duas palmeiras numa praia tropical.">
+  <img src="../assets/gallery/mascot-surf.jpg" width="372" alt="O mascote banana 3D brilhante surfando numa pequena prancha sobre uma onda turquesa, com os braços abertos para manter o equilíbrio.">
+  <br>
+  <sub><b>O mesmo mascote em novas cenas</b> com <code>--follow-up</code>. Model 2.1, 1K, cerca de 3 centavos de dólar cada.</sub>
 </p>
 
 <a id="install"></a>

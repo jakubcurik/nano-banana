@@ -68,25 +68,37 @@ Das ist ein echter Lauf. Ein 2K-Bild mit dem Standardmodell kostet etwa fünf US
 
 ## Galerie
 
-Bis auf den Text und den Terminal-Screenshot ist jedes Bild in diesem README mit dem Skill entstanden. Die Prompts liegen in [`assets/prompts`](../assets/prompts).
+Bis auf den Text und den Terminal-Screenshot ist jedes Bild in diesem README mit dem Skill entstanden. Alle Personen, Orte und Gegenstände darauf sind KI-generiert. Die Prompts findest du unter [`assets/prompts`](../assets/prompts).
 
 <p align="center">
-  <img src="../assets/gallery/1-illustration.jpg" width="760" alt="Eine flache Illustration einer dampfenden Kaffeetasse und eines Croissants auf einer Holztheke an einem sonnigen Fenster, rechts freier Platz für eine Überschrift.">
+  <img src="../assets/gallery/photo-gallery-wall.jpg" width="266" alt="Handyfoto einer einzelnen Banane, die mit silbernem Klebeband an eine weiße Galeriewand geklebt ist, daneben ein leeres weißes Schild. Im unscharfen Hintergrund betrachten zwei Besucher sie ernst.">
+  <img src="../assets/gallery/photo-shopping-cart.jpg" width="266" alt="Handyfoto einer Banane, die mit einem roten Gurt im Kindersitz eines Supermarkt-Einkaufswagens angeschnallt ist.">
+  <img src="../assets/gallery/photo-car-seat.jpg" width="266" alt="Handyfoto vom Fahrersitz aus: Eine Banane sitzt aufrecht auf dem Beifahrersitz, der Sicherheitsgurt ist über sie gelegt.">
   <br>
-  <sub><b>Text zu Bild.</b> Modell 2.1, 2K, 16:9, etwa 5 Cent.</sub>
+  <sub><b>Fotos im Handy-Look.</b> Eine Banane, die an eine Galeriewand geklebt, in einen Einkaufswagen geschnallt und im Auto angegurtet ist. Model 2.1, 2K, 3:4, etwa 5 Cent pro Bild.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/2a-edit-before.jpg" width="372" alt="Eine schlichte weiße Keramiktasse auf hellgrauem Studiohintergrund.">
-  <img src="../assets/gallery/2b-edit-after.jpg" width="372" alt="Dieselbe weiße Tasse auf einem rustikalen Holztisch an einem sonnigen Fenster, neben einer kleinen Schale mit Kaffeebohnen.">
+  <img src="../assets/gallery/edit-before-night-flash.jpg" width="372" alt="Eine Frau geht nachts an einem Schaufenster vorbei, angestrahlt vom harten Kamerablitz. Sie hält eine halb geschälte Banane und schaut nach links.">
+  <img src="../assets/gallery/edit-after-sunny-day.jpg" width="372" alt="Dasselbe Foto bei hellem Nachmittagssonnenlicht unter blauem Himmel: dieselbe Frau, dieselbe Pose, dieselbe Banane und dasselbe Schaufenster.">
   <br>
-  <sub><b>Bearbeiten mit <code>--follow-up</code>.</b> Dieselbe Tasse, neue Szene. Modell 2.1, 2K, etwa 5 Cent pro Bild.</sub>
+  <sub><b>Bearbeiten mit <code>--image</code>.</b> Aus einem nächtlichen Blitzfoto wurde ein sonniger Nachmittag. Bis auf das Licht blieb alles gleich. Model 2.1, 1K, etwa 3 Cent.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/3-poster-text.jpg" width="400" alt="Ein minimalistisches Café-Plakat mit der Aufschrift FRESH COFFEE über einer flachen Kaffeetasse und der Zeile Open daily from 8 to 18.">
+  <img src="../assets/gallery/graphic-infographic.jpg" width="760" alt="Eine Infografik mit dem Titel Anatomy of a banana: eine glänzende Banane auf dunklem Hintergrund mit vier Beschriftungen, die auf Stem, Peel, Fruit und Tip zeigen.">
   <br>
-  <sub><b>Text im Bild.</b> Modell Pro, 2K, 4:5, etwa 13 Cent.</sub>
+  <img src="../assets/gallery/graphic-poster.jpg" width="300" alt="Ein Retro-Reiseposter mit den Schriftzügen BANANA ISLAND und Visit the sunny side, mit einer bananenförmigen Insel, Palmen und einem Segelboot bei Sonnenuntergang.">
+  <img src="../assets/gallery/graphic-vector.jpg" width="375" alt="Eine flache Vektorillustration einer Banane aus geometrischen Formen in Gelb und Bernstein auf weichem petrolfarbenem Hintergrund.">
+  <br>
+  <sub><b>Grafiken.</b> Eine Infografik und ein Textposter mit Model Pro (2K, etwa 13 Cent pro Stück) sowie eine flache Vektorillustration mit Model 2.1 (2K, etwa 5 Cent).</sub>
+</p>
+
+<p align="center">
+  <img src="../assets/gallery/mascot-hammock.jpg" width="372" alt="Das glänzende 3D-Bananenmaskottchen mit Sonnenbrille entspannt in einer Hängematte zwischen zwei Palmen an einem tropischen Strand.">
+  <img src="../assets/gallery/mascot-surf.jpg" width="372" alt="Das glänzende 3D-Bananenmaskottchen fährt auf einem kleinen Surfbrett über eine türkisfarbene Welle und hält die Arme zum Balancieren ausgestreckt.">
+  <br>
+  <sub><b>Dasselbe Maskottchen in neuen Szenen</b> mit <code>--follow-up</code>. Model 2.1, 1K, etwa 3 Cent pro Bild.</sub>
 </p>
 
 <a id="install"></a>

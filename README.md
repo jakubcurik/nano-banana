@@ -66,25 +66,37 @@ That is a real run. A 2K image on the default model costs about five US cents, a
 
 ## Gallery
 
-Apart from the text and the terminal screenshot, every image in this README was made with the skill. The prompts are in [`assets/prompts`](assets/prompts).
+Apart from the text and the terminal screenshot, every image in this README was made with the skill. Every person, place and object in them is AI-generated. The prompts are in [`assets/prompts`](assets/prompts).
 
 <p align="center">
-  <img src="assets/gallery/1-illustration.jpg" width="760" alt="A flat illustration of a steaming coffee cup and a croissant on a wooden counter by a sunny window, with empty space on the right for a headline.">
+  <img src="assets/gallery/photo-gallery-wall.jpg" width="266" alt="A phone photo of a single banana stuck to a white gallery wall with silver duct tape, next to a blank white card, while two visitors in the soft-focus background study it seriously.">
+  <img src="assets/gallery/photo-shopping-cart.jpg" width="266" alt="A phone photo of a banana buckled into the child seat of a supermarket shopping cart with a red seat belt.">
+  <img src="assets/gallery/photo-car-seat.jpg" width="266" alt="A phone photo from the driver's seat of a banana sitting upright in the passenger seat with the seat belt fastened across it.">
   <br>
-  <sub><b>Text to image.</b> Model 2.1, 2K, 16:9, about 5 cents.</sub>
+  <sub><b>Phone-style photos.</b> A banana taped to a gallery wall, buckled into a shopping cart and belted into a car seat. Model 2.1, 2K, 3:4, about 5 cents each.</sub>
 </p>
 
 <p align="center">
-  <img src="assets/gallery/2a-edit-before.jpg" width="372" alt="A plain white ceramic mug on a light grey studio background.">
-  <img src="assets/gallery/2b-edit-after.jpg" width="372" alt="The same white mug on a rustic wooden table by a sunny window, next to a small bowl of coffee beans.">
+  <img src="assets/gallery/edit-before-night-flash.jpg" width="372" alt="A woman walks past a shop window at night, lit by a harsh camera flash, holding a half-peeled banana and looking to the left.">
+  <img src="assets/gallery/edit-after-sunny-day.jpg" width="372" alt="The same photo in bright afternoon sunlight under a blue sky: the same woman, pose, banana and shop window.">
   <br>
-  <sub><b>Edit with <code>--follow-up</code>.</b> Same mug, new scene. Model 2.1, 2K, about 5 cents per image.</sub>
+  <sub><b>Edit with <code>--image</code>.</b> A flash photo at night became a sunny afternoon. Everything except the light stayed the same. Model 2.1, 1K, about 3 cents.</sub>
 </p>
 
 <p align="center">
-  <img src="assets/gallery/3-poster-text.jpg" width="400" alt="A minimalist cafe poster that reads FRESH COFFEE above a flat coffee cup, with the line Open daily from 8 to 18.">
+  <img src="assets/gallery/graphic-infographic.jpg" width="760" alt="An infographic titled Anatomy of a banana: a glossy banana on a dark background with four labels pointing to the Stem, Peel, Fruit and Tip.">
   <br>
-  <sub><b>Text in an image.</b> Model Pro, 2K, 4:5, about 13 cents.</sub>
+  <img src="assets/gallery/graphic-poster.jpg" width="300" alt="A retro travel poster that reads BANANA ISLAND and Visit the sunny side, with a banana-shaped island, palm trees and a sailboat at sunset.">
+  <img src="assets/gallery/graphic-vector.jpg" width="375" alt="A flat vector illustration of a banana built from geometric shapes in yellow and amber on a soft teal background.">
+  <br>
+  <sub><b>Graphics.</b> An infographic and a text poster on Model Pro (2K, about 13 cents each), and a flat vector illustration on Model 2.1 (2K, about 5 cents).</sub>
+</p>
+
+<p align="center">
+  <img src="assets/gallery/mascot-hammock.jpg" width="372" alt="The glossy 3D banana mascot in sunglasses relaxing in a hammock between two palm trees on a tropical beach.">
+  <img src="assets/gallery/mascot-surf.jpg" width="372" alt="The glossy 3D banana mascot riding a small surfboard on a turquoise wave with its arms out for balance.">
+  <br>
+  <sub><b>Same mascot, new scenes</b> with <code>--follow-up</code>. Model 2.1, 1K, about 3 cents each.</sub>
 </p>
 
 ## Install

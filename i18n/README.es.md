@@ -68,25 +68,37 @@ Es una ejecución real. Una imagen en 2K con el modelo predeterminado cuesta uno
 
 ## Galería
 
-Aparte del texto y de la captura de la terminal, todas las imágenes de este README se hicieron con el skill. Los prompts están en [`assets/prompts`](../assets/prompts).
+Aparte del texto y de la captura de la terminal, todas las imágenes de este README se hicieron con la skill. Todas las personas, lugares y objetos que aparecen en ellas están generados por IA. Los prompts están en [`assets/prompts`](../assets/prompts).
 
 <p align="center">
-  <img src="../assets/gallery/1-illustration.jpg" width="760" alt="Una ilustración plana de una taza de café humeante y un cruasán sobre una barra de madera junto a una ventana soleada, con espacio vacío a la derecha para un titular.">
+  <img src="../assets/gallery/photo-gallery-wall.jpg" width="266" alt="Foto de móvil de una sola banana pegada con cinta americana plateada a una pared blanca de galería, junto a una tarjeta blanca en blanco; al fondo, desenfocados, dos visitantes la observan con seriedad.">
+  <img src="../assets/gallery/photo-shopping-cart.jpg" width="266" alt="Foto de móvil de una banana abrochada con un cinturón rojo en el asiento infantil de un carrito de supermercado.">
+  <img src="../assets/gallery/photo-car-seat.jpg" width="266" alt="Foto de móvil desde el asiento del conductor: una banana sentada derecha en el asiento del copiloto, con el cinturón de seguridad abrochado sobre ella.">
   <br>
-  <sub><b>De texto a imagen.</b> Modelo 2.1, 2K, 16:9, unos 5 centavos.</sub>
+  <sub><b>Fotos al estilo del móvil.</b> Una banana pegada con cinta en la pared de una galería, abrochada en un carrito de supermercado y sujeta con el cinturón en el asiento de un coche. Model 2.1, 2K, 3:4, unos 5 centavos de dólar cada una.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/2a-edit-before.jpg" width="372" alt="Una taza de cerámica blanca lisa sobre un fondo de estudio gris claro.">
-  <img src="../assets/gallery/2b-edit-after.jpg" width="372" alt="La misma taza blanca sobre una mesa de madera rústica junto a una ventana soleada, al lado de un pequeño cuenco con granos de café.">
+  <img src="../assets/gallery/edit-before-night-flash.jpg" width="372" alt="Una mujer pasa de noche junto a un escaparate, iluminada por el flash fuerte de la cámara, con una banana a medio pelar en la mano y mirando hacia la izquierda.">
+  <img src="../assets/gallery/edit-after-sunny-day.jpg" width="372" alt="La misma foto con luz intensa de tarde y cielo azul: la misma mujer, la misma pose, la misma banana y el mismo escaparate.">
   <br>
-  <sub><b>Edición con <code>--follow-up</code>.</b> La misma taza, otra escena. Modelo 2.1, 2K, unos 5 centavos por imagen.</sub>
+  <sub><b>Edición con <code>--image</code>.</b> Una foto con flash de noche se convirtió en una tarde soleada. Todo lo demás se mantuvo igual, salvo la luz. Model 2.1, 1K, unos 3 centavos de dólar.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/3-poster-text.jpg" width="400" alt="Un cartel minimalista de cafetería que dice FRESH COFFEE sobre una taza de café plana, con la línea Open daily from 8 to 18.">
+  <img src="../assets/gallery/graphic-infographic.jpg" width="760" alt="Una infografía titulada Anatomy of a banana: una banana brillante sobre fondo oscuro con cuatro etiquetas que señalan Stem, Peel, Fruit y Tip.">
   <br>
-  <sub><b>Texto dentro de una imagen.</b> Modelo Pro, 2K, 4:5, unos 13 centavos.</sub>
+  <img src="../assets/gallery/graphic-poster.jpg" width="300" alt="Un póster de viajes retro con los textos BANANA ISLAND y Visit the sunny side, con una isla en forma de banana, palmeras y un velero al atardecer.">
+  <img src="../assets/gallery/graphic-vector.jpg" width="375" alt="Una ilustración vectorial plana de una banana hecha con formas geométricas en amarillo y ámbar sobre un fondo verde azulado suave.">
+  <br>
+  <sub><b>Gráficos.</b> Una infografía y un póster de texto con Model Pro (2K, unos 13 centavos de dólar cada uno) y una ilustración vectorial plana con Model 2.1 (2K, unos 5 centavos de dólar).</sub>
+</p>
+
+<p align="center">
+  <img src="../assets/gallery/mascot-hammock.jpg" width="372" alt="La mascota banana 3D brillante, con gafas de sol, descansa en una hamaca entre dos palmeras en una playa tropical.">
+  <img src="../assets/gallery/mascot-surf.jpg" width="372" alt="La mascota banana 3D brillante sobre una tabla de surf pequeña, en una ola turquesa, con los brazos abiertos para mantener el equilibrio.">
+  <br>
+  <sub><b>La misma mascota en escenas nuevas</b> con <code>--follow-up</code>. Model 2.1, 1K, unos 3 centavos de dólar cada una.</sub>
 </p>
 
 <a id="install"></a>

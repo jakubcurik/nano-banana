@@ -22,6 +22,7 @@ Based on Google's [image generation guide](https://ai.google.dev/gemini-api/docs
 - **Give a complex scene in steps.** "First, create a background of... Then, in the foreground, add... Finally, place..."
 - **Put text that must appear in the image in quotes** and describe the lettering in words (bold sans-serif, elegant serif, hand-lettered). Write longer text first, then paste it into the prompt.
 - **Set aspect ratio and resolution with `-a` and `-s`,** not in the prompt.
+- **Edits that must stay faithful** (only the light or the time of day changes): pass the original with `-i` and list what must not change, instead of using `--follow-up`. `--follow-up` redraws the scene and shifts pose and gaze.
 - **Refine in steps** with `--follow-up`: "That's great, but make the lighting a bit warmer. Keep everything else the same."
 
 ## 2. Templates for new images

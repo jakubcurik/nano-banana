@@ -68,25 +68,37 @@ nano-banana는 Claude Code를 비롯한 코딩 에이전트가 Google의 Nano Ba
 
 ## 갤러리
 
-텍스트와 터미널 스크린샷을 제외하면, 이 README의 이미지는 모두 이 스킬로 만들었습니다. 프롬프트는 [`assets/prompts`](../assets/prompts)에 있습니다.
+텍스트와 터미널 스크린샷을 제외하면 이 README의 모든 이미지는 이 스킬로 만들었습니다. 이미지에 나오는 사람, 장소, 사물은 모두 AI가 생성한 것입니다. 프롬프트는 [`assets/prompts`](../assets/prompts)에서 볼 수 있습니다.
 
 <p align="center">
-  <img src="../assets/gallery/1-illustration.jpg" width="760" alt="햇살이 드는 창가의 나무 카운터 위에 김이 나는 커피 잔과 크루아상이 놓인 플랫 일러스트. 오른쪽에는 제목을 넣을 빈 공간이 있습니다.">
+  <img src="../assets/gallery/photo-gallery-wall.jpg" width="266" alt="휴대폰으로 찍은 사진. 바나나 한 개가 은색 덕트 테이프로 흰 갤러리 벽에 붙어 있고, 옆에는 빈 흰색 카드가 있습니다. 초점이 흐린 배경에서는 관람객 두 명이 진지하게 바나나를 살펴봅니다.">
+  <img src="../assets/gallery/photo-shopping-cart.jpg" width="266" alt="휴대폰으로 찍은 사진. 바나나가 슈퍼마켓 쇼핑 카트의 아이 좌석에 빨간 안전벨트로 고정되어 있습니다.">
+  <img src="../assets/gallery/photo-car-seat.jpg" width="266" alt="운전석에서 휴대폰으로 찍은 사진. 바나나가 조수석에 똑바로 앉아 있고 안전벨트가 가로질러 채워져 있습니다.">
   <br>
-  <sub><b>텍스트에서 이미지로.</b> 모델 2.1, 2K, 16:9, 약 5센트.</sub>
+  <sub><b>휴대폰으로 찍은 듯한 사진.</b> 갤러리 벽에 테이프로 붙인 바나나, 쇼핑 카트에 벨트로 고정한 바나나, 자동차 시트에 안전벨트를 맨 바나나입니다. Model 2.1, 2K, 3:4, 이미지당 약 5센트.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/2a-edit-before.jpg" width="372" alt="밝은 회색 스튜디오 배경 위의 평범한 흰색 도자기 머그잔.">
-  <img src="../assets/gallery/2b-edit-after.jpg" width="372" alt="햇살이 드는 창가의 소박한 나무 테이블 위에 놓인 같은 흰색 머그잔과, 그 옆의 작은 커피콩 그릇.">
+  <img src="../assets/gallery/edit-before-night-flash.jpg" width="372" alt="한 여성이 밤에 상점 쇼윈도 앞을 지나갑니다. 카메라의 강한 플래시가 비추고 있고, 반쯤 껍질을 벗긴 바나나를 들고 왼쪽을 바라봅니다.">
+  <img src="../assets/gallery/edit-after-sunny-day.jpg" width="372" alt="같은 사진을 파란 하늘 아래 밝은 오후 햇빛으로 바꾼 이미지. 같은 여성, 같은 자세, 같은 바나나, 같은 쇼윈도입니다.">
   <br>
-  <sub><b><code>--follow-up</code>으로 편집.</b> 같은 머그잔, 새로운 장면. 모델 2.1, 2K, 이미지당 약 5센트.</sub>
+  <sub><b><code>--image</code>로 편집.</b> 밤에 플래시를 터뜨려 찍은 사진을 화창한 오후로 바꿨습니다. 조명 외에는 모두 그대로입니다. Model 2.1, 1K, 약 3센트.</sub>
 </p>
 
 <p align="center">
-  <img src="../assets/gallery/3-poster-text.jpg" width="400" alt="평평한 커피 잔 위에 FRESH COFFEE라고 쓰여 있고, 그 아래에 Open daily from 8 to 18 문구가 있는 미니멀한 카페 포스터.">
+  <img src="../assets/gallery/graphic-infographic.jpg" width="760" alt="Anatomy of a banana라는 제목의 인포그래픽. 어두운 배경 위의 윤기 나는 바나나에 라벨 네 개가 Stem, Peel, Fruit, Tip을 가리킵니다.">
   <br>
-  <sub><b>이미지 속 텍스트.</b> 모델 Pro, 2K, 4:5, 약 13센트.</sub>
+  <img src="../assets/gallery/graphic-poster.jpg" width="300" alt="BANANA ISLAND와 Visit the sunny side라는 문구가 적힌 복고풍 여행 포스터. 바나나 모양의 섬, 야자수, 석양 속 돛단배가 있습니다.">
+  <img src="../assets/gallery/graphic-vector.jpg" width="375" alt="기하학적 도형으로 만든 바나나의 플랫 벡터 일러스트. 은은한 청록색 배경에 노란색과 황갈색을 사용했습니다.">
+  <br>
+  <sub><b>그래픽.</b> 인포그래픽과 텍스트 포스터는 Model Pro(2K, 개당 약 13센트), 플랫 벡터 일러스트는 Model 2.1(2K, 약 5센트)로 만들었습니다.</sub>
+</p>
+
+<p align="center">
+  <img src="../assets/gallery/mascot-hammock.jpg" width="372" alt="선글라스를 쓴 윤기 나는 3D 바나나 마스코트가 열대 해변의 야자수 두 그루 사이 해먹에서 쉬고 있습니다.">
+  <img src="../assets/gallery/mascot-surf.jpg" width="372" alt="윤기 나는 3D 바나나 마스코트가 청록색 파도 위에서 작은 서핑보드를 타고, 균형을 잡으려고 팔을 벌리고 있습니다.">
+  <br>
+  <sub><code>--follow-up</code>으로 <b>같은 마스코트를 새로운 장면에</b> 등장시켰습니다. Model 2.1, 1K, 이미지당 약 3센트.</sub>
 </p>
 
 <a id="install"></a>
