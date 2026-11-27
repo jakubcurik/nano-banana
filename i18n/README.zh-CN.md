@@ -12,15 +12,15 @@
   <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml"><img alt="测试" src="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml/badge.svg?branch=main"></a>
   <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml"><img alt="校验" src="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml/badge.svg?branch=main"></a>
   <a href="https://github.com/jakubcurik/nano-banana/releases"><img alt="版本" src="https://flat.badgen.net/github/release/jakubcurik/nano-banana?label=release&color=ffd54a&labelColor=0f1b2d"></a>
-  <a href="../LICENSE"><img alt="许可证：MIT" src="https://img.shields.io/badge/license-MIT-ffd54a?labelColor=0f1b2d"></a>
+  <a href="../LICENSE"><img alt="许可证：MIT" src="../assets/badges/license-mit.svg"></a>
   <a href="https://github.com/jakubcurik/nano-banana/stargazers"><img alt="Star 数" src="https://flat.badgen.net/github/stars/jakubcurik/nano-banana?label=stars&color=ffd54a&labelColor=0f1b2d"></a>
 </p>
 
 <p align="center">
-  <img alt="Claude Code 插件" src="https://img.shields.io/badge/Claude_Code-plugin-ffd54a?labelColor=0f1b2d">
-  <a href="https://agentskills.io"><img alt="兼容 Agent Skills 格式" src="https://img.shields.io/badge/Agent_Skills-compatible-ffd54a?labelColor=0f1b2d"></a>
-  <img alt="Python 3.11 或更高版本" src="https://img.shields.io/badge/python-3.11%2B-ffd54a?labelColor=0f1b2d">
-  <img alt="Gemini API" src="https://img.shields.io/badge/Gemini_API-Nano_Banana-ffd54a?labelColor=0f1b2d">
+  <img alt="Claude Code 插件" src="../assets/badges/claude-code-plugin.svg">
+  <a href="https://agentskills.io"><img alt="兼容 Agent Skills 格式" src="../assets/badges/agent-skills.svg"></a>
+  <img alt="Python 3.11 或更高版本" src="../assets/badges/python.svg">
+  <img alt="Gemini API" src="../assets/badges/gemini-api.svg">
 </p>
 
 <p align="center">
