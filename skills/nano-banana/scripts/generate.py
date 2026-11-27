@@ -674,7 +674,8 @@ def build_parser():
 def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
-            stream.reconfigure(encoding="utf-8")
+            # Line buffering keeps stdout and stderr in order when an agent captures both through a pipe.
+            stream.reconfigure(encoding="utf-8", line_buffering=True)
     a = apply_settings(build_parser().parse_args(argv))
     if a.delete and a.batch_result:
         sys.exit("Use --delete and --batch-result in separate runs.")
