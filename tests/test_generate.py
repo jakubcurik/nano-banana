@@ -255,6 +255,9 @@ class RunTests(unittest.TestCase):
         self.assertEqual(out.count("Saved: "), 2)
         self.assertIn("Total for this run:", out)
         self.assertIn("Done: 2 of 2 images saved.", out)
+        self.assertIn("Image 1 of 2: the API answered in", out)
+        sidecar = next(self.dir.glob("*.txt")).read_text(encoding="utf-8")
+        self.assertRegex(sidecar, r"\| took \d+\.\d s \| cost 0\.0411 USD\n")
         self.assertEqual((self.dir / generate.LAST_ID_FILE).read_text(encoding="utf-8"), "v1_2")
 
     def test_failure_keeps_earlier_images_and_stops(self):
@@ -265,7 +268,7 @@ class RunTests(unittest.TestCase):
         self.assertEqual(len(list(self.dir.glob("*.png"))), 2)
         first_saved = out.index("Saved: ")
         self.assertLess(first_saved, out.index("Real cost"))  # printed as soon as the file exists
-        self.assertIn("Image 3 of 4 failed: RuntimeError: boom", err)
+        self.assertRegex(err, r"Image 3 of 4 failed after \d+\.\d s: RuntimeError: boom")
         self.assertIn("Retry: Unexpected error: the outcome is uncertain", err)
         self.assertIn("1 more image(s) were not attempted", err)
         self.assertIn("2 of 4 images saved", err)

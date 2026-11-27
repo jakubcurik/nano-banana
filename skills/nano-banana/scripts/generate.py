@@ -133,7 +133,8 @@ def save_image(data, mime, prompt, out_dir, index):
     return path
 
 
-def save_sidecar(path, a, interaction_id=None, previous_id=None, suggestions=None):
+def save_sidecar(path, a, interaction_id=None, previous_id=None, suggestions=None, seconds=None, cost=None,
+                 batch_job=None):
     """Save the prompt and options next to the image so variants can be compared and repeated."""
     options = [f"model {a.model}", a.size, f"aspect {a.aspect or 'auto'}"]
     if a.thinking:
@@ -146,7 +147,13 @@ def save_sidecar(path, a, interaction_id=None, previous_id=None, suggestions=Non
         options.append(f"follows {previous_id}")
     if interaction_id:
         options.append(f"id {interaction_id}")
-    text = "# " + " | ".join(options) + "\n\n" + a.prompt + "\n"
+    if batch_job:
+        options.append(f"batch job {batch_job}")
+    if seconds is not None:
+        options.append(f"took {seconds:.1f} s")
+    if cost is not None:
+        options.append(f"cost {cost:.4f} USD")
+    text ="# " + " | ".join(options) + "\n\n" + a.prompt + "\n"
     if suggestions:
         text += "\n# Google Search suggestions (HTML; Google requires showing them when you publish grounded output)\n"
         text += "\n".join(suggestions) + "\n"
@@ -273,13 +280,18 @@ def cost_line(counts, costs, fx, currency):
             f" + {thinking} tokens {costs['text']:.4f} + input {counts['input']} tokens {costs['input']:.4f}")
 
 
+def response_cost(response, model, batch=False):
+    """(token counts, USD per part) of one response, or (None, None) when the API reported no usage."""
+    counts = token_counts(getattr(response, "usage", None) or getattr(response, "usage_metadata", None))
+    return (counts, cost_usd(counts, model, batch)) if counts else (None, None)
+
+
 def print_usage(response, model, fx, currency, batch=False):
     """Print the real cost of one response and return it in USD (None when the API reported no usage)."""
-    counts = token_counts(getattr(response, "usage", None) or getattr(response, "usage_metadata", None))
+    counts, costs = response_cost(response, model, batch)
     if counts is None:
         print("Real cost: unknown, the API reported no usage for this call.")
         return None
-    costs = cost_usd(counts, model, batch)
     print(cost_line(counts, costs, fx, currency))
     return sum(costs.values())
 
@@ -475,24 +487,29 @@ def run_interactions(client, a, model, images, previous_id, out_dir, fx, estimat
     for i in range(a.count):
         label = f"Image {i + 1} of {a.count}" if a.count > 1 else "Image"
         attempted += 1
+        start = time.monotonic()
         try:
             response = interact(client, a, model, images, previous_id)
         except KeyboardInterrupt:
-            problems.append(f"{label}: interrupted while waiting for the API. "
-                            "The request may still be generated and billed.")
+            problems.append(f"{label}: interrupted after {time.monotonic() - start:.1f} s while waiting for "
+                            "the API. The request may still be generated and billed.")
             interrupted = True
             break
         except Exception as exc:
             _, verdict = classify_error(exc)
-            print(f"{label} failed: {describe(exc)}", file=sys.stderr)
+            print(f"{label} failed after {time.monotonic() - start:.1f} s: {describe(exc)}", file=sys.stderr)
             print(f"Retry: {verdict}", file=sys.stderr)
             problems.append(f"{label} failed. {verdict}")
             break
+        seconds = time.monotonic() - start
+        print(f"{label}: the API answered in {seconds:.1f} s")
         results = images_from_interaction(response)
         suggestions = suggestions_from_interaction(response) if a.search else None
+        _, costs = response_cost(response, model)
+        call_usd = sum(costs.values()) if costs else None
         for data, mime in results:
             path = save_image(data, mime, a.prompt, out_dir, len(saved))
-            save_sidecar(path, a, response.id, previous_id, suggestions)
+            save_sidecar(path, a, response.id, previous_id, suggestions, seconds, call_usd)
             saved.append(path)
             print(f"Saved: {path}")
         if not results:
