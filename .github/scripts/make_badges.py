@@ -34,7 +34,7 @@ def esc(text):
 
 
 def badge(label, value):
-    """The same look as GitHub's workflow badges: dark gradient label, green gradient value, 3 px corners."""
+    """The shape of GitHub's workflow badges: dark gradient label, 3 px corners, but a banana-yellow value."""
     lw = round(text_width(label) + 11, 2)
     vw = round(text_width(value) + 8, 2)
     total = round(lw + vw, 2)
@@ -44,15 +44,15 @@ def badge(label, value):
   <title>{esc(label)}: {esc(value)}</title>
   <defs>
     <linearGradient id="l" x1="50%" y1="0%" x2="50%" y2="100%"><stop stop-color="#444D56" offset="0%"/><stop stop-color="#24292E" offset="100%"/></linearGradient>
-    <linearGradient id="v" x1="50%" y1="0%" x2="50%" y2="100%"><stop stop-color="#34D058" offset="0%"/><stop stop-color="#28A745" offset="100%"/></linearGradient>
+    <linearGradient id="v" x1="50%" y1="0%" x2="50%" y2="100%"><stop stop-color="#FFE066" offset="0%"/><stop stop-color="#F2C12E" offset="100%"/></linearGradient>
   </defs>
   <g fill="none" fill-rule="evenodd" font-family="'DejaVu Sans',Verdana,Geneva,sans-serif" font-size="11" text-anchor="middle">
     <path d="M0,3 C0,1.343 1.343,0 3,0 L{lw},0 L{lw},20 L3,20 C1.343,20 0,18.657 0,17 Z" fill="url(#l)"/>
     <path d="M{lw},0 L{total - 3},0 C{total - 1.343},0 {total},1.343 {total},3 L{total},17 C{total},18.657 {total - 1.343},20 {total - 3},20 L{lw},20 Z" fill="url(#v)"/>
     <text x="{lx}" y="15" fill="#010101" fill-opacity=".3" textLength="{ltw}" lengthAdjust="spacingAndGlyphs" aria-hidden="true">{esc(label)}</text>
     <text x="{lx}" y="14" fill="#FFFFFF" textLength="{ltw}" lengthAdjust="spacingAndGlyphs">{esc(label)}</text>
-    <text x="{vx}" y="15" fill="#010101" fill-opacity=".3" textLength="{vtw}" lengthAdjust="spacingAndGlyphs" aria-hidden="true">{esc(value)}</text>
-    <text x="{vx}" y="14" fill="#FFFFFF" textLength="{vtw}" lengthAdjust="spacingAndGlyphs">{esc(value)}</text>
+    <text x="{vx}" y="15" fill="#FFFFFF" fill-opacity=".35" textLength="{vtw}" lengthAdjust="spacingAndGlyphs" aria-hidden="true">{esc(value)}</text>
+    <text x="{vx}" y="14" fill="#24292E" textLength="{vtw}" lengthAdjust="spacingAndGlyphs">{esc(value)}</text>
   </g>
 </svg>
 """

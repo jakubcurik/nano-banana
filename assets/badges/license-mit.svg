@@ -2,14 +2,14 @@
   <title>license: MIT</title>
   <defs>
     <linearGradient id="l" x1="50%" y1="0%" x2="50%" y2="100%"><stop stop-color="#444D56" offset="0%"/><stop stop-color="#24292E" offset="100%"/></linearGradient>
-    <linearGradient id="v" x1="50%" y1="0%" x2="50%" y2="100%"><stop stop-color="#34D058" offset="0%"/><stop stop-color="#28A745" offset="100%"/></linearGradient>
+    <linearGradient id="v" x1="50%" y1="0%" x2="50%" y2="100%"><stop stop-color="#FFE066" offset="0%"/><stop stop-color="#F2C12E" offset="100%"/></linearGradient>
   </defs>
   <g fill="none" fill-rule="evenodd" font-family="'DejaVu Sans',Verdana,Geneva,sans-serif" font-size="11" text-anchor="middle">
     <path d="M0,3 C0,1.343 1.343,0 3,0 L50.0,0 L50.0,20 L3,20 C1.343,20 0,18.657 0,17 Z" fill="url(#l)"/>
     <path d="M50.0,0 L76.0,0 C77.657,0 79.0,1.343 79.0,3 L79.0,17 C79.0,18.657 77.657,20 76.0,20 L50.0,20 Z" fill="url(#v)"/>
     <text x="25.0" y="15" fill="#010101" fill-opacity=".3" textLength="39.0" lengthAdjust="spacingAndGlyphs" aria-hidden="true">license</text>
     <text x="25.0" y="14" fill="#FFFFFF" textLength="39.0" lengthAdjust="spacingAndGlyphs">license</text>
-    <text x="64.5" y="15" fill="#010101" fill-opacity=".3" textLength="21.0" lengthAdjust="spacingAndGlyphs" aria-hidden="true">MIT</text>
-    <text x="64.5" y="14" fill="#FFFFFF" textLength="21.0" lengthAdjust="spacingAndGlyphs">MIT</text>
+    <text x="64.5" y="15" fill="#FFFFFF" fill-opacity=".35" textLength="21.0" lengthAdjust="spacingAndGlyphs" aria-hidden="true">MIT</text>
+    <text x="64.5" y="14" fill="#24292E" textLength="21.0" lengthAdjust="spacingAndGlyphs">MIT</text>
   </g>
 </svg>
