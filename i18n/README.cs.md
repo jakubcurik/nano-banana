@@ -52,7 +52,7 @@ nano-banana je skill pro agenty, díky kterému Claude Code a další programova
 
 Když agenta požádáš o úvodní obrázek, dostaneš ho. Když ale řekneš "zkus ještě pár variant", obyčejné volání API může spustit tucet generování ve 4K, zatímco ty se pořád díváš na první výsledek. Každý obrázek se platí a v chatu se nikde nedozvíš, kolik.
 
-Tenhle skill před každým voláním vypíše odhad ceny a po něm skutečnou cenu. Zkontroluje, jestli zvolený model tvé volby umí, takže špatná velikost nebo nepodporovaná úroveň přemýšlení selže na tvém počítači a ne až na API. Agentovi navíc dává krátký postup: zeptat se, k čemu obrázek je, sehnat referenční fotky, když má předmět vypadat jako něco skutečného, napsat prompt anglicky a výsledek si prohlédnout, než ho označí za hotový.
+Tenhle skill před každým voláním vypíše odhad ceny a po něm skutečnou cenu, včetně tokenů za přemýšlení a vstup. Běh, jehož odhad přesáhne tvůj limit (0,50 USD, pokud nenastavíš jiný), se zastaví dřív, než se cokoli odešle. Zkontroluje, jestli zvolený model tvé volby umí, takže špatná velikost nebo nepodporovaná úroveň přemýšlení selže na tvém počítači a ne až na API. Agentovi navíc dává krátký postup: zjistit, k čemu obrázek je, sehnat referenční fotky, když má předmět vypadat jako něco skutečného, napsat prompt anglicky a výsledek si prohlédnout, než ho označí za hotový.
 
 <sub>Neoficiální projekt. Nijak nesouvisí s Googlem a Google ho nepodporuje. "Nano Banana" a "Gemini" jsou názvy Googlu pro jeho obrazové modely a API.</sub>
 
@@ -62,7 +62,7 @@ Tenhle skill před každým voláním vypíše odhad ceny a po něm skutečnou c
   <img src="../assets/terminal.png" width="880" alt="Výstup terminálu při jednom generování: model, odhad ceny 0,0504 USD, ID interakce, spotřeba 1680 obrazových tokenů za 0,0504 USD a cesta k uloženému souboru.">
 </p>
 
-Je to skutečný běh. Obrázek ve 2K na výchozím modelu stojí asi pět amerických centů a číslo vidíš před voláním i po něm.
+Je to skutečný běh verze 1.0. Obrázek ve 2K na výchozím modelu stojí asi pět amerických centů a číslo vidíš před voláním i po něm. Od verze 1.1 započítává cena po volání i tokeny za přemýšlení a vstup, takže vychází o něco výš než odhad, a výstup ukazuje, jak dlouho volání trvalo.
 
 ## Galerie
 
@@ -143,9 +143,17 @@ uv run --script $S "A flat illustration of a red apple on a white table" -a 16:9
 uv run --script $S "Make the apple green. Keep everything else the same." --follow-up
 uv run --script $S "Put this product on a marble table" -i product.jpg -m pro -s 2K
 uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --currency CZK
+uv run --script $S --batch-result
+uv run --script $S "Same scene at dusk. Keep everything else the same." --follow-up .cache/nano-banana/20261128-101500-a-flat-illustration-2.png
+
+F=skills/nano-banana/scripts/finish.py
+uv run --script $F .cache/nano-banana/hero.png --size 1200x630 --format webp
+uv run --script $F .cache/nano-banana/icon.png --transparent
 ```
 
-Obrázky se ukládají do `.cache/nano-banana/`, každý vedle souboru `.txt` s promptem, volbami a ID interakce.
+Obrázky se ukládají do `.cache/nano-banana/`, každý vedle souboru `.txt` s promptem, volbami, ID interakce, délkou volání a cenou. Složka dostane vlastní `.gitignore`, takže nic z ní neskončí v gitu.
+
+Dávková úloha čeká nejvýš 8 minut (`--wait`), pak skript skončí a napíše, jak výsledek vyzvednout. `--batch-result` uloží obrázky, jakmile je úloha hotová; když ho spustíš znovu, soubory se nezdvojí.
 
 <details>
 <summary>Všechny volby</summary>
@@ -158,27 +166,36 @@ Obrázky se ukládají do `.cache/nano-banana/`, každý vedle souboru `.txt` s 
 | `-i foto.jpg` | vstupní obrázek k úpravě nebo jako vzor, lze opakovat, nejvýš 14 |
 | `-t minimal / medium / high` | úroveň přemýšlení, podle modelu |
 | `--search` | vyhledávání přes Google včetně obrázků (ne u `lite`) |
-| `--follow-up [ID]` | navázat na poslední výsledek, nebo na zadanou interakci |
+| `--follow-up [IMAGE or ID]` | navázat na poslední výsledek, na vybraný obrázek (ID je v jeho `.txt`), nebo na zadanou interakci |
 | `-n 4` | počet obrázků, každý se platí zvlášť |
 | `-o složka` | výstupní složka |
+| `--name hero` | začátek názvu souboru místo začátku promptu |
 | `--format png / jpeg` | formát výstupního souboru |
 | `--prompt-file soubor` | načte prompt ze souboru |
 | `--no-store` | požádá Google, aby interakci neukládal (na ni pak nejde navázat) |
+| `--delete IMAGE or ID` | smaže uloženou interakci u Googlu |
 | `--batch` | za poloviční cenu, výsledek může trvat až 24 h (modely 2.1 a lite) |
+| `--wait 8` | kolik minut čekat na dávkovou úlohu, než skript skončí; `0` ji jen odešle |
+| `--batch-result [JOB]` | vyzvedne dávkovou úlohu, výchozí je poslední odeslaná do výstupní složky |
 | `--estimate` | vypíše odhad ceny a skončí |
+| `--max-cost 0.50` | zastaví se před voláním, když odhad přesáhne tolik USD |
 | `--currency CZK` | ukáže ceny i v jiné měně (kurz z ČNB) |
+
+`--currency` a `--max-cost` můžou přijít i z `NANO_BANANA_CURRENCY` a `NANO_BANANA_MAX_COST`, nebo ze souboru `~/.config/nano-banana/config.json` (`{"currency": "CZK", "max_cost": 1}`). Přednost má příkazová řádka, pak proměnné prostředí, pak soubor.
+
+`finish.py` umí `--size WxH` (vyplnění a ořez, `--keep` určí, která část zůstane), `--format webp / avif / jpeg / png`, `--quality` a `--transparent [COLOR]`.
 
 </details>
 
 ## Jak to funguje
 
-Skill nutí agenta pracovat v pevném pořadí. Nejdřív se zeptá, k čemu obrázek je. Když má ukazovat skutečný druh, produkt nebo místo, sežene dvě nebo tři referenční fotky a nechá si je od tebe potvrdit. Potom napíše prompt anglicky a odhadne cenu. Pokud odhad přesáhne asi 0,50 USD nebo se mají generovat víc než čtyři obrázky, nejdřív se zeptá tebe. Po vygenerování výsledek prohlédne a drobnosti opraví navázáním, místo aby generoval znovu od začátku.
+Skill nutí agenta pracovat v pevném pořadí. Nejdřív ze zadání a z projektu zjistí, k čemu obrázek je, a zeptá se jen na to, co chybí. Když má ukazovat skutečný druh, produkt nebo místo, sežene dvě nebo tři referenční fotky a nechá si je od tebe potvrdit. Potom napíše prompt anglicky a odhadne cenu. Nad 0,50 USD skript sám odmítne běžet a agent limit zvýší, až když souhlasíš; před víc než čtyřmi obrázky se také zeptá. Po vygenerování výsledek prohlédne, drobnosti opraví navázáním, místo aby generoval znovu od začátku, a umí obrázek oříznout a převést pro stránku, na kterou patří.
 
 Celý postup je v [`SKILL.md`](../skills/nano-banana/SKILL.md). Šablony promptů, šablony úprav a seznam častých chyb najdeš v [`references/prompting.md`](../skills/nano-banana/references/prompting.md).
 
 ## Modely a ceny
 
-Stav k 26. listopadu 2026, USD za obrázek.
+Stav k 28. listopadu 2026, USD za obrázek. Tokeny za přemýšlení a vstup se platí navíc, obvykle méně než cent za obrázek.
 
 | Model | Nejvhodnější na | 1K | 2K | 4K |
 |---|---|---|---|---|
@@ -187,14 +204,16 @@ Stav k 26. listopadu 2026, USD za obrázek.
 | `pro` (`gemini-3-pro-image`) | nejtěžší zadání, hodně textu | 0,134 | 0,134 | 0,240 |
 | `lite` (`gemini-3.1-flash-lite-image`) | spousta jednoduchých obrázků, jen 1K, bez vyhledávání | 0,034 | n/a | n/a |
 
-Ceny a údaje o modelech jsou v [`models.json`](../skills/nano-banana/scripts/models.json). To je jediný soubor, který upravíš, když Google změní [ceník](https://ai.google.dev/gemini-api/docs/pricing). `--search` se účtuje zvlášť: 5 000 dotazů s vyhledáváním měsíčně je zdarma, pak 14 USD za 1 000 vyhledávání.
+Ceny a údaje o modelech jsou v [`models.json`](../skills/nano-banana/scripts/models.json). Z toho jediného souboru skript ceny čte, když Google změní [ceník](https://ai.google.dev/gemini-api/docs/pricing); test selže, když tabulky tady a v `SKILL.md` přestanou souhlasit. `--search` se účtuje zvlášť: 5 000 dotazů s vyhledáváním měsíčně je zdarma, pak 14 USD za 1 000 vyhledávání.
 
 ## Dobré vědět
 
-- Google ukládá interakce, aby šlo navazovat: na placených projektech 55 dní, na bezplatném tarifu 1 den. U citlivých fotek použij `--no-store`.
+- Google ukládá interakce, aby šlo navazovat: na placených projektech 55 dní, na bezplatném tarifu 1 den. U citlivých fotek použij `--no-store`, nebo interakci dodatečně smaž přes `--delete`.
 - Každý vygenerovaný obrázek nese neviditelný vodoznak SynthID.
 - Model si vymýšlí detaily. Když má obrázek odpovídat skutečnému druhu, produktu nebo budově, dej mu přes `-i` 2-3 referenční fotky. Postup skillu na tom trvá.
-- Požadavek, který vypršel, mohl být přesto zaúčtovaný, proto skript nikdy neopakuje sám od sebe.
+- Po chybě skript řekne, jestli je bezpečné to zkusit znovu. Odmítnutý požadavek (4xx, třeba špatná volba, chybějící klíč nebo vyčerpaná kvóta) se neúčtoval. Chyba serveru nebo vypršení času se zaúčtovat mohly, proto skript nikdy neopakuje sám od sebe.
+- Generování trvá zhruba 10-30 sekund. Agent, kterému vyprší časový limit příkazu, přijde o obrázek, který už zaplatil, proto mu skill říká, ať nechá dost času nebo dlouhé úlohy pustí na pozadí.
+- `finish.py --transparent` odstraní jednu plochou barvu pozadí. Měkké stíny a přechody zůstanou a průhledný výstup samotného modelu není otestovaný, takže si řekni o čisté pozadí a zkontroluj okraje.
 - Pokud zveřejníš výstup vytvořený přes `--search`, Google vyžaduje zobrazit návrhy vyhledávání. Skript je ukládá vedle obrázku.
 
 ## Časté otázky
@@ -205,10 +224,13 @@ CLI provede volání a dělá to dobře. Tenhle skill přidává to, co se děje
 | | Google `gemini-api` CLI a skilly | nano-banana |
 |---|---|---|
 | Odhad ceny předem, skutečná cena potom | ne | ano |
-| Agent se před drahým během zeptá | ne | ano |
+| Drahý běh se zastaví, dokud nezvýšíš limit | ne | ano (`--max-cost`) |
+| Řekne, jestli neúspěšné volání mohlo být zaúčtované | ne | ano |
 | Volby zkontrolované podle modelu | ne, odmítne je až API | ano |
 | Navazující úpravy bez opisování ID | ručně | `--follow-up` |
 | Prompt a volby uložené vedle každého obrázku | ne | ano |
+| Výsledky dávky vyzvednutelné v dalším běhu | ne | `--batch-result` |
+| Ořez, převod a průhledné pozadí pro web | ne | `finish.py` |
 | Průvodce prompty a šablony | ne | ano |
 
 CLI je beta a rychle se mění, takže před volbou zkontroluj obojí.
@@ -217,7 +239,7 @@ CLI je beta a rychle se mění, takže před volbou zkontroluj obojí.
 Skill používá otevřený formát [Agent Skills](https://agentskills.io), takže ho mohou použít i další agenti, kteří načítají soubory `SKILL.md`. Já jsem ho vyzkoušel jen v Claude Code.
 
 **Ceny se změnily. Co mám upravit?**
-Soubor `skills/nano-banana/scripts/models.json` a tabulky v `SKILL.md` a tady.
+Soubor `skills/nano-banana/scripts/models.json` a tabulky v `SKILL.md`, tady a v překladech. Testy ti řeknou, když na některou zapomeneš.
 
 **Proč se ptá na referenční fotky?**
 Bez nich si model detaily skutečné věci domýšlí a výsledek vypadá věrohodně a přitom je špatně.
@@ -226,7 +248,7 @@ Bez nich si model detaily skutečné věci domýšlí a výsledek vypadá věroh
 
 Issues i pull requesty jsou vítané, hlavně když Google změní modely, ceny nebo API. Soubor `models.json`, tabulky v `SKILL.md` a README upravuj společně. Tento překlad vznikl s pomocí AI, opravy jsou vítané.
 
-Offline testy nepotřebují API klíč ani připojení k síti:
+Offline testy nepotřebují API klíč ani připojení k síti (testy `finish.py` běží, když je nainstalovaný Pillow, jinak se přeskočí):
 
 ```bash
 python -m unittest discover -s tests

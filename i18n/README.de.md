@@ -52,7 +52,7 @@ nano-banana ist ein Agent Skill, mit dem Claude Code und andere Coding-Agenten B
 
 Wenn du einen Agenten um ein Hero-Bild bittest, bekommst du eins. Sagst du aber „probier noch ein paar Varianten“, kann ein einfacher API-Aufruf ein Dutzend 4K-Generierungen starten, während du noch das erste Ergebnis ansiehst. Jedes Bild wird berechnet, und im Chat steht nirgends, wie viel.
 
-Dieser Skill gibt vor jedem Aufruf den geschätzten Preis aus und danach die tatsächlichen Kosten. Er prüft deine Optionen gegen das, was das gewählte Modell unterstützt, sodass eine falsche Größe oder eine nicht unterstützte Thinking-Stufe auf deinem Rechner scheitert und nicht erst bei der API. Dazu gibt er dem Agenten eine kurze Routine: fragen, wofür das Bild gedacht ist, Referenzfotos besorgen, wenn das Motiv wie etwas Reales aussehen muss, den Prompt auf Englisch schreiben und sich das Ergebnis ansehen, bevor er es für fertig erklärt.
+Dieser Skill gibt vor jedem Aufruf den geschätzten Preis aus und danach die tatsächlichen Kosten, Thinking- und Eingabe-Tokens eingeschlossen. Ein Lauf, dessen Schätzung über deinem Limit liegt (0,50 USD, wenn du kein anderes setzt), stoppt, bevor etwas gesendet wird. Er prüft deine Optionen gegen das, was das gewählte Modell unterstützt, sodass eine falsche Größe oder eine nicht unterstützte Thinking-Stufe auf deinem Rechner scheitert und nicht erst bei der API. Dazu gibt er dem Agenten eine kurze Routine: herausfinden, wofür das Bild gedacht ist, Referenzfotos besorgen, wenn das Motiv wie etwas Reales aussehen muss, den Prompt auf Englisch schreiben und sich das Ergebnis ansehen, bevor er es für fertig erklärt.
 
 <sub>Inoffiziell. Nicht mit Google verbunden und nicht von Google unterstützt. „Nano Banana“ und „Gemini“ sind Googles Namen für seine Bildmodelle und die API.</sub>
 
@@ -62,7 +62,7 @@ Dieser Skill gibt vor jedem Aufruf den geschätzten Preis aus und danach die tat
   <img src="../assets/terminal.png" width="880" alt="Terminal-Ausgabe einer Generierung: das Modell, geschätzte Kosten von 0,0504 USD, die Interaktions-ID, der Verbrauch von 1680 Bild-Tokens für 0,0504 USD und der Pfad der gespeicherten Datei.">
 </p>
 
-Das ist ein echter Lauf. Ein 2K-Bild mit dem Standardmodell kostet etwa fünf US-Cent, und du siehst die Zahl vor dem Aufruf und noch einmal danach.
+Das ist ein echter Lauf mit Version 1.0. Ein 2K-Bild mit dem Standardmodell kostet etwa fünf US-Cent, und du siehst die Zahl vor dem Aufruf und noch einmal danach. Seit 1.1 zählen die Kosten nach dem Aufruf auch die Thinking- und Eingabe-Tokens mit, liegen also etwas über der Schätzung, und die Ausgabe zeigt, wie lange der Aufruf gedauert hat.
 
 <a id="gallery"></a>
 
@@ -149,9 +149,17 @@ uv run --script $S "A flat illustration of a red apple on a white table" -a 16:9
 uv run --script $S "Make the apple green. Keep everything else the same." --follow-up
 uv run --script $S "Put this product on a marble table" -i product.jpg -m pro -s 2K
 uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --currency EUR
+uv run --script $S --batch-result
+uv run --script $S "Same scene at dusk. Keep everything else the same." --follow-up .cache/nano-banana/20261128-101500-a-flat-illustration-2.png
+
+F=skills/nano-banana/scripts/finish.py
+uv run --script $F .cache/nano-banana/hero.png --size 1200x630 --format webp
+uv run --script $F .cache/nano-banana/icon.png --transparent
 ```
 
-Die Bilder landen in `.cache/nano-banana/`, jedes neben einer `.txt`-Datei mit dem Prompt, den Optionen und der Interaktions-ID.
+Die Bilder landen in `.cache/nano-banana/`, jedes neben einer `.txt`-Datei mit dem Prompt, den Optionen, der Interaktions-ID, der Dauer des Aufrufs und seinen Kosten. Der Ordner bekommt eine eigene `.gitignore`, damit nichts daraus in Git landet.
+
+Ein Batch-Job wartet höchstens 8 Minuten (`--wait`), dann beendet sich das Skript und sagt dir, wie du das Ergebnis abholst. `--batch-result` speichert die Bilder, sobald der Job fertig ist; ein zweiter Aufruf legt sie nicht doppelt an.
 
 <details>
 <summary>Alle Optionen</summary>
@@ -164,15 +172,24 @@ Die Bilder landen in `.cache/nano-banana/`, jedes neben einer `.txt`-Datei mit d
 | `-i photo.jpg` | Eingabebild zum Bearbeiten oder als Referenz, wiederholbar, maximal 14 |
 | `-t minimal / medium / high` | Thinking-Stufe, hängt vom Modell ab |
 | `--search` | Google-Search-Grounding, auch mit Bildersuche (nicht bei `lite`) |
-| `--follow-up [ID]` | an das letzte Ergebnis oder an eine angegebene Interaktion anknüpfen |
+| `--follow-up [IMAGE or ID]` | an das letzte Ergebnis, an ein ausgewähltes Bild (die ID steht in seiner `.txt`) oder an eine angegebene Interaktion anknüpfen |
 | `-n 4` | Anzahl der Bilder, jedes wird einzeln berechnet |
 | `-o Ordner` | Ausgabeordner |
+| `--name hero` | Anfang des Dateinamens statt des Prompt-Anfangs |
 | `--format png / jpeg` | Format der Ausgabedatei |
 | `--prompt-file Datei` | liest den Prompt aus einer Datei |
 | `--no-store` | Google bitten, die Interaktion nicht zu speichern (daran lässt sich dann nicht anknüpfen) |
+| `--delete IMAGE or ID` | eine gespeicherte Interaktion bei Google löschen |
 | `--batch` | halber Preis, dauert bis zu 24 h (Modelle 2.1 und lite) |
+| `--wait 8` | so viele Minuten auf einen Batch-Job warten, bevor das Skript endet; `0` schickt ihn nur ab |
+| `--batch-result [JOB]` | einen Batch-Job abholen, standardmäßig den zuletzt in den Ausgabeordner abgeschickten |
 | `--estimate` | gibt die Preisschätzung aus und stoppt |
+| `--max-cost 0.50` | vor dem Aufruf stoppen, wenn die Schätzung über so vielen USD liegt |
 | `--currency CZK` | zeigt Preise zusätzlich in dieser Währung (Kurs der Tschechischen Nationalbank) |
+
+`--currency` und `--max-cost` können auch aus `NANO_BANANA_CURRENCY` und `NANO_BANANA_MAX_COST` kommen oder aus `~/.config/nano-banana/config.json` (`{"currency": "EUR", "max_cost": 1}`). Die Kommandozeile gewinnt, dann die Umgebung, dann die Datei.
+
+`finish.py` kennt `--size WxH` (füllend skalieren und zuschneiden, `--keep` wählt den Teil, der bleibt), `--format webp / avif / jpeg / png`, `--quality` und `--transparent [COLOR]`.
 
 </details>
 
@@ -180,7 +197,7 @@ Die Bilder landen in `.cache/nano-banana/`, jedes neben einer `.txt`-Datei mit d
 
 ## So funktioniert es
 
-Der Skill lässt den Agenten in einer festen Reihenfolge arbeiten. Zuerst fragt er, wofür das Bild gedacht ist. Soll es eine echte Art, ein Produkt oder einen Ort zeigen, besorgt er zwei oder drei Referenzfotos und lässt sie dich bestätigen. Danach schreibt er den Prompt auf Englisch und schätzt den Preis; bei mehr als etwa 0,50 USD oder mehr als vier Bildern fragt er vorher nach. Nach der Generierung sieht er sich das Ergebnis an und korrigiert Kleinigkeiten per Follow-up, statt von vorn anzufangen.
+Der Skill lässt den Agenten in einer festen Reihenfolge arbeiten. Zuerst ermittelt er aus deiner Anfrage und deinem Projekt, wofür das Bild gedacht ist, und fragt nur nach, was fehlt. Soll es eine echte Art, ein Produkt oder einen Ort zeigen, besorgt er zwei oder drei Referenzfotos und lässt sie dich bestätigen. Danach schreibt er den Prompt auf Englisch und schätzt den Preis. Über 0,50 USD verweigert das Skript selbst den Lauf, und der Agent hebt das Limit erst an, wenn du zustimmst; vor mehr als vier Bildern fragt er ebenfalls. Nach der Generierung sieht er sich das Ergebnis an, korrigiert Kleinigkeiten per Follow-up, statt von vorn anzufangen, und kann das Bild für die Seite zuschneiden und umwandeln, auf die es gehört.
 
 Der vollständige Ablauf steht in [`SKILL.md`](../skills/nano-banana/SKILL.md). Prompt-Vorlagen, Bearbeitungsvorlagen und eine Liste häufiger Fehler findest du in [`references/prompting.md`](../skills/nano-banana/references/prompting.md).
 
@@ -188,7 +205,7 @@ Der vollständige Ablauf steht in [`SKILL.md`](../skills/nano-banana/SKILL.md). 
 
 ## Modelle und Preise
 
-Stand 26. November 2026, USD pro Bild.
+Stand 28. November 2026, USD pro Bild. Thinking- und Eingabe-Tokens kommen dazu, meist weniger als ein Cent pro Bild.
 
 | Modell | Am besten für | 1K | 2K | 4K |
 |---|---|---|---|---|
@@ -197,14 +214,16 @@ Stand 26. November 2026, USD pro Bild.
 | `pro` (`gemini-3-pro-image`) | die schwierigsten Prompts, viel Text | 0,134 | 0,134 | 0,240 |
 | `lite` (`gemini-3.1-flash-lite-image`) | viele einfache Bilder, nur 1K, keine Suche | 0,034 | n/a | n/a |
 
-Preise und Modelldaten stehen in [`models.json`](../skills/nano-banana/scripts/models.json). Das ist die einzige Datei, die du ändern musst, wenn Google seine [Preisliste](https://ai.google.dev/gemini-api/docs/pricing) ändert. `--search` wird zusätzlich berechnet: 5.000 Prompts mit Grounding pro Monat sind kostenlos, danach kosten 1.000 Suchanfragen 14 USD.
+Preise und Modelldaten stehen in [`models.json`](../skills/nano-banana/scripts/models.json). Aus dieser einen Datei liest das Skript die Preise, wenn Google seine [Preisliste](https://ai.google.dev/gemini-api/docs/pricing) ändert; ein Test schlägt fehl, wenn die Tabellen hier und in `SKILL.md` nicht mehr dazu passen. `--search` wird zusätzlich berechnet: 5.000 Prompts mit Grounding pro Monat sind kostenlos, danach kosten 1.000 Suchanfragen 14 USD.
 
 ## Gut zu wissen
 
-- Google speichert Interaktionen, damit Folgeaufrufe funktionieren: 55 Tage bei bezahlten Projekten, 1 Tag im kostenlosen Tarif. Nutze `--no-store` für sensible Fotos.
+- Google speichert Interaktionen, damit Folgeaufrufe funktionieren: 55 Tage bei bezahlten Projekten, 1 Tag im kostenlosen Tarif. Nutze `--no-store` für sensible Fotos oder lösche eine Interaktion nachträglich mit `--delete`.
 - Jedes generierte Bild trägt ein unsichtbares SynthID-Wasserzeichen.
 - Das Modell erfindet Details. Wenn ein Bild zu einer echten Art, einem echten Produkt oder Gebäude passen muss, gib ihm per `-i` 2-3 Referenzfotos. Der Ablauf des Skills besteht darauf.
-- Eine Anfrage mit Timeout kann trotzdem abgerechnet worden sein, deshalb wiederholt das Skript nie von selbst.
+- Nach einem Fehler sagt das Skript, ob ein neuer Versuch sicher ist. Eine abgelehnte Anfrage (4xx, etwa eine falsche Option, ein fehlender Key oder ein Kontingent) wurde nicht berechnet. Ein Serverfehler oder ein Timeout kann berechnet worden sein, deshalb wiederholt das Skript nie von selbst.
+- Eine Generierung dauert grob 10-30 Sekunden. Ein Agent, dessen Shell-Aufruf ins Timeout läuft, verliert ein bereits bezahltes Bild, deshalb sagt ihm der Skill, genug Zeit einzuplanen oder lange Jobs im Hintergrund laufen zu lassen.
+- `finish.py --transparent` entfernt eine flache Hintergrundfarbe. Weiche Schatten und Verläufe bleiben, und eine transparente Ausgabe des Modells selbst ist ungetestet; bitte also um einen schlichten Hintergrund und prüfe die Kanten.
 - Wenn du Ergebnisse veröffentlichst, die mit `--search` entstanden sind, verlangt Google, dass du seine Suchvorschläge anzeigst. Das Skript speichert sie neben dem Bild.
 
 <a id="faq"></a>
@@ -217,10 +236,13 @@ Die CLI führt den Aufruf aus, und das macht sie gut. Dieser Skill ergänzt, was
 | | Google `gemini-api`-CLI und Skills | nano-banana |
 |---|---|---|
 | Preisschätzung vorher, echte Kosten nachher | nein | ja |
-| Der Agent fragt vor teuren Läufen nach | nein | ja |
+| Teure Läufe stoppen, bis du das Limit anhebst | nein | ja (`--max-cost`) |
+| Sagt, ob ein fehlgeschlagener Aufruf berechnet worden sein kann | nein | ja |
 | Optionen werden gegen das Modell geprüft | nein, die API lehnt sie ab | ja |
 | Folgebearbeitungen ohne ID-Abtippen | manuell | `--follow-up` |
 | Prompt und Optionen neben jedem Bild gespeichert | nein | ja |
+| Batch-Ergebnisse in einem späteren Lauf abholbar | nein | `--batch-result` |
+| Zuschneiden, umwandeln und freistellen fürs Web | nein | `finish.py` |
 | Prompting-Leitfaden und Vorlagen | nein | ja |
 
 Die CLI ist eine Beta und entwickelt sich schnell, prüfe also beide, bevor du dich entscheidest.
@@ -229,7 +251,7 @@ Die CLI ist eine Beta und entwickelt sich schnell, prüfe also beide, bevor du d
 Der Skill folgt dem offenen Format [Agent Skills](https://agentskills.io), andere Agenten, die `SKILL.md`-Dateien laden, können ihn also nutzen. Ich habe ihn nur in Claude Code getestet.
 
 **Die Preise haben sich geändert. Was muss ich anpassen?**
-`skills/nano-banana/scripts/models.json` sowie die Tabellen in `SKILL.md` und hier.
+`skills/nano-banana/scripts/models.json` sowie die Tabellen in `SKILL.md`, hier und in den Übersetzungen. Die Tests sagen dir, wenn eine davon hinterherhinkt.
 
 **Warum fragt er nach Referenzfotos?**
 Ohne sie denkt sich das Modell die Details einer echten Sache aus, und das Ergebnis sieht plausibel aus und ist trotzdem falsch.
@@ -240,7 +262,7 @@ Issues und Pull Requests sind willkommen, besonders wenn Google Modelle, Preise 
 
 Diese Übersetzung ist mit Hilfe von KI entstanden, Korrekturen sind willkommen.
 
-Die Offline-Tests brauchen weder API-Key noch Netzwerk:
+Die Offline-Tests brauchen weder API-Key noch Netzwerk (die Tests für `finish.py` laufen, wenn Pillow installiert ist, sonst werden sie übersprungen):
 
 ```bash
 python -m unittest discover -s tests

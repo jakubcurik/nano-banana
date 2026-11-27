@@ -52,7 +52,7 @@ nano-banana는 Claude Code를 비롯한 코딩 에이전트가 Google의 Nano Ba
 
 에이전트에 히어로 이미지를 요청하면 이미지가 나옵니다. 그런데 "변형을 몇 개 더 시도해 줘"라고 하면, 일반 API 호출은 첫 번째 결과를 보고 있는 동안 4K 이미지를 열두 장쯤 생성해 버릴 수 있습니다. 이미지마다 요금이 청구되는데, 채팅에서는 그 금액을 알 수 없습니다.
 
-이 스킬은 호출 전에 예상 가격을, 호출 후에 실제 비용을 출력합니다. 선택한 옵션이 해당 모델에서 지원되는지도 확인하므로, 잘못된 크기나 지원하지 않는 thinking 수준은 API에서 오류가 나는 것이 아니라 로컬에서 먼저 실패합니다. 그 밖에는 에이전트가 따를 짧은 절차를 제공합니다. 이미지를 어디에 쓸지 묻고, 대상이 실제 사물처럼 보여야 하면 참고 사진을 확보하고, 프롬프트는 영어로 작성하고, 완료라고 하기 전에 결과를 직접 확인합니다.
+이 스킬은 호출 전에 예상 가격을, 호출 후에 thinking 및 입력 토큰까지 포함한 실제 비용을 출력합니다. 예상 비용이 한도(따로 정하지 않으면 0.50 USD)를 넘는 실행은 아무것도 보내기 전에 멈춥니다. 선택한 옵션이 해당 모델에서 지원되는지도 확인하므로, 잘못된 크기나 지원하지 않는 thinking 수준은 API에서 오류가 나는 것이 아니라 로컬에서 먼저 실패합니다. 그 밖에는 에이전트가 따를 짧은 절차를 제공합니다. 이미지를 어디에 쓸지 파악하고, 대상이 실제 사물처럼 보여야 하면 참고 사진을 확보하고, 프롬프트는 영어로 작성하고, 완료라고 하기 전에 결과를 직접 확인합니다.
 
 <sub>비공식 프로젝트입니다. Google과 제휴 관계가 아니며 Google의 승인을 받지 않았습니다. "Nano Banana"와 "Gemini"는 Google이 자사의 이미지 모델과 API에 붙인 이름입니다.</sub>
 
@@ -62,7 +62,7 @@ nano-banana는 Claude Code를 비롯한 코딩 에이전트가 Google의 Nano Ba
   <img src="../assets/terminal.png" width="880" alt="이미지 한 장을 생성할 때의 터미널 출력: 모델, 예상 비용 0.0504 USD, 인터랙션 ID, 이미지 토큰 1680개 사용에 0.0504 USD, 저장된 파일 경로.">
 </p>
 
-실제 실행 결과입니다. 기본 모델에서 2K 이미지 한 장은 약 5센트(미국 달러 기준)이며, 호출 전과 후에 금액을 확인할 수 있습니다.
+버전 1.0의 실제 실행 결과입니다. 기본 모델에서 2K 이미지 한 장은 약 5센트(미국 달러 기준)이며, 호출 전과 후에 금액을 확인할 수 있습니다. 1.1부터는 호출 후 비용에 thinking 및 입력 토큰도 포함되어 예상치보다 조금 높게 나오고, 호출에 걸린 시간도 표시됩니다.
 
 <a id="gallery"></a>
 
@@ -149,9 +149,17 @@ uv run --script $S "A flat illustration of a red apple on a white table" -a 16:9
 uv run --script $S "Make the apple green. Keep everything else the same." --follow-up
 uv run --script $S "Put this product on a marble table" -i product.jpg -m pro -s 2K
 uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --currency EUR
+uv run --script $S --batch-result
+uv run --script $S "Same scene at dusk. Keep everything else the same." --follow-up .cache/nano-banana/20261128-101500-a-flat-illustration-2.png
+
+F=skills/nano-banana/scripts/finish.py
+uv run --script $F .cache/nano-banana/hero.png --size 1200x630 --format webp
+uv run --script $F .cache/nano-banana/icon.png --transparent
 ```
 
-이미지는 `.cache/nano-banana/`에 저장되며, 각 이미지 옆에 프롬프트, 옵션, 인터랙션 ID가 담긴 `.txt` 파일이 함께 생깁니다.
+이미지는 `.cache/nano-banana/`에 저장되며, 각 이미지 옆에 프롬프트, 옵션, 인터랙션 ID, 호출 시간과 비용이 담긴 `.txt` 파일이 함께 생깁니다. 이 폴더에는 자체 `.gitignore`가 만들어지므로 안의 파일이 git에 들어가지 않습니다.
+
+배치 작업은 최대 8분(`--wait`)까지 기다린 뒤 스크립트가 종료되고, 결과를 받아 오는 방법을 알려 줍니다. `--batch-result`는 작업이 끝났으면 이미지를 저장하며, 다시 실행해도 파일이 중복되지 않습니다.
 
 <details>
 <summary>전체 옵션</summary>
@@ -164,15 +172,24 @@ uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --curren
 | `-i photo.jpg` | 편집 대상 또는 참고용 입력 이미지, 여러 번 지정 가능, 최대 14장 |
 | `-t minimal / medium / high` | 사고(thinking) 수준, 모델에 따라 다름 |
 | `--search` | 이미지 검색을 포함한 Google Search 그라운딩 (`lite`에서는 사용 불가) |
-| `--follow-up [ID]` | 마지막 결과 또는 지정한 인터랙션에서 이어서 진행 |
+| `--follow-up [IMAGE or ID]` | 마지막 결과, 고른 이미지(ID는 해당 `.txt`에 있음) 또는 지정한 인터랙션에서 이어서 진행 |
 | `-n 4` | 이미지 수, 이미지마다 따로 과금 |
 | `-o folder` | 출력 폴더 |
+| `--name hero` | 프롬프트 앞부분 대신 쓸 파일 이름 |
 | `--format png / jpeg` | 출력 파일 형식 |
 | `--prompt-file file` | 파일에서 프롬프트 읽기 |
 | `--no-store` | Google에 인터랙션을 저장하지 않도록 요청 (이 경우 해당 인터랙션에서는 후속 편집을 할 수 없음) |
+| `--delete IMAGE or ID` | Google에 저장된 인터랙션 삭제 |
 | `--batch` | 절반 가격, 최대 24시간 소요 (모델 2.1과 lite) |
+| `--wait 8` | 종료하기 전에 배치 작업을 기다릴 시간(분), `0`은 제출만 하고 종료 |
+| `--batch-result [JOB]` | 배치 작업 결과 받기, 기본값은 출력 폴더에 마지막으로 제출한 작업 |
 | `--estimate` | 예상 가격을 출력하고 종료 |
+| `--max-cost 0.50` | 예상 비용이 이 USD 금액을 넘으면 호출 전에 중단 |
 | `--currency CZK` | 해당 통화로도 가격 표시 (환율은 체코 국립은행 기준) |
+
+`--currency`와 `--max-cost`는 `NANO_BANANA_CURRENCY`와 `NANO_BANANA_MAX_COST`, 또는 `~/.config/nano-banana/config.json`(`{"currency": "EUR", "max_cost": 1}`)에서도 지정할 수 있습니다. 명령줄이 가장 우선이고, 그다음 환경 변수, 마지막이 파일입니다.
+
+`finish.py`는 `--size WxH`(채우도록 크기를 맞춘 뒤 잘라 내기, `--keep`으로 남길 부분 선택), `--format webp / avif / jpeg / png`, `--quality`, `--transparent [COLOR]`를 지원합니다.
 
 </details>
 
@@ -180,7 +197,7 @@ uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --curren
 
 ## 작동 방식
 
-이 스킬은 에이전트가 정해진 순서로 일하게 합니다. 먼저 이미지를 어디에 쓸지 묻습니다. 실제 종, 제품, 장소를 보여 줘야 한다면 참고 사진 두세 장을 구하고 사용자에게 확인을 받습니다. 그다음 영어로 프롬프트를 쓰고 가격을 추정하며, 약 0.50달러를 넘거나 이미지가 네 장보다 많으면 먼저 사용자에게 묻습니다. 생성한 뒤에는 결과를 살펴보고, 사소한 수정은 처음부터 다시 만들지 않고 후속 편집으로 처리합니다.
+이 스킬은 에이전트가 정해진 순서로 일하게 합니다. 먼저 요청과 프로젝트에서 이미지의 용도를 파악하고, 빠진 것만 묻습니다. 실제 종, 제품, 장소를 보여 줘야 한다면 참고 사진 두세 장을 구하고 사용자에게 확인을 받습니다. 그다음 영어로 프롬프트를 쓰고 가격을 추정합니다. 0.50 USD를 넘으면 스크립트가 스스로 실행을 거부하고, 에이전트는 사용자가 동의할 때만 한도를 올립니다. 이미지가 네 장보다 많을 때도 먼저 묻습니다. 생성한 뒤에는 결과를 살펴보고, 사소한 수정은 처음부터 다시 만들지 않고 후속 편집으로 처리하며, 이미지를 들어갈 페이지에 맞게 자르고 변환할 수도 있습니다.
 
 전체 워크플로는 [`SKILL.md`](../skills/nano-banana/SKILL.md)에 있습니다. 프롬프트 템플릿, 편집 템플릿, 흔한 실수 목록은 [`references/prompting.md`](../skills/nano-banana/references/prompting.md)에 있습니다.
 
@@ -188,7 +205,7 @@ uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --curren
 
 ## 모델과 가격
 
-2026년 11월 26일 기준, 이미지당 USD입니다.
+2026년 11월 28일 기준, 이미지당 USD입니다. thinking 및 입력 토큰은 별도이며, 보통 이미지당 1센트 미만입니다.
 
 | 모델 | 적합한 용도 | 1K | 2K | 4K |
 |---|---|---|---|---|
@@ -197,14 +214,16 @@ uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --curren
 | `pro` (`gemini-3-pro-image`) | 가장 까다로운 프롬프트, 텍스트가 많은 이미지 | 0.134 | 0.134 | 0.240 |
 | `lite` (`gemini-3.1-flash-lite-image`) | 단순한 이미지를 많이 만들 때, 1K만 지원, 검색 없음 | 0.034 | n/a | n/a |
 
-가격과 모델 데이터는 [`models.json`](../skills/nano-banana/scripts/models.json)에 있습니다. Google이 [가격표](https://ai.google.dev/gemini-api/docs/pricing)를 바꿀 때 수정할 파일은 이것 하나입니다. `--search`는 별도로 과금됩니다. 그라운딩 프롬프트 월 5,000건은 무료이고, 그 이후에는 검색 쿼리 1,000건당 14 USD입니다.
+가격과 모델 데이터는 [`models.json`](../skills/nano-banana/scripts/models.json)에 있습니다. Google이 [가격표](https://ai.google.dev/gemini-api/docs/pricing)를 바꿀 때 스크립트가 가격을 읽는 파일은 이것 하나이며, 이 문서와 `SKILL.md`의 표가 이 파일과 어긋나면 테스트가 실패합니다. `--search`는 별도로 과금됩니다. 그라운딩 프롬프트 월 5,000건은 무료이고, 그 이후에는 검색 쿼리 1,000건당 14 USD입니다.
 
 ## 알아두면 좋은 점
 
-- Google은 후속 편집이 가능하도록 인터랙션을 저장합니다. 유료 프로젝트는 55일, 무료 등급은 1일입니다. 민감한 사진에는 `--no-store`를 사용하세요.
+- Google은 후속 편집이 가능하도록 인터랙션을 저장합니다. 유료 프로젝트는 55일, 무료 등급은 1일입니다. 민감한 사진에는 `--no-store`를 사용하거나, 나중에 `--delete`로 삭제하세요.
 - 생성된 모든 이미지에는 눈에 보이지 않는 SynthID 워터마크가 들어갑니다.
 - 모델은 세부 묘사를 지어냅니다. 이미지가 실제 종, 제품, 건물과 일치해야 하면 `-i`로 참고 사진 2-3장을 함께 주세요. 스킬의 워크플로도 이를 필수로 요구합니다.
-- 타임아웃된 요청도 이미 과금되었을 수 있으므로, 스크립트는 스스로 재시도하지 않습니다.
+- 오류가 나면 스크립트가 다시 시도해도 안전한지 알려 줍니다. 거부된 요청(4xx, 예를 들어 잘못된 옵션, 없는 키, 할당량)은 과금되지 않았습니다. 서버 오류나 타임아웃은 과금되었을 수 있으므로, 스크립트는 스스로 재시도하지 않습니다.
+- 생성 한 번에 대략 10~30초가 걸립니다. 셸 호출이 시간 초과로 끊긴 에이전트는 이미 비용을 낸 이미지를 잃게 되므로, 스킬은 충분한 시간을 주거나 긴 작업은 백그라운드에서 실행하라고 안내합니다.
+- `finish.py --transparent`는 단색 배경 한 가지만 제거합니다. 부드러운 그림자와 그라데이션은 남으며, 모델 자체의 투명 출력은 검증되지 않았으니 단색 배경을 요청하고 가장자리를 확인하세요.
 - `--search`로 만든 결과물을 공개하는 경우 Google은 검색 제안을 표시하도록 요구합니다. 스크립트는 이를 이미지 옆에 저장합니다.
 
 <a id="faq"></a>
@@ -217,10 +236,13 @@ CLI는 호출을 수행하고, 그 일을 잘 해냅니다. 이 스킬은 호출
 | | Google `gemini-api` CLI와 스킬 | nano-banana |
 |---|---|---|
 | 호출 전 가격 추정, 호출 후 실제 비용 | 아니요 | 예 |
-| 비용이 큰 실행 전에 에이전트가 먼저 확인 | 아니요 | 예 |
+| 한도를 올리기 전까지 비용이 큰 실행은 멈춤 | 아니요 | 예(`--max-cost`) |
+| 실패한 호출이 과금되었을 수 있는지 알려 줌 | 아니요 | 예 |
 | 모델에 맞는지 옵션 검사 | 아니요, API가 거부함 | 예 |
 | ID를 복사하지 않는 후속 편집 | 수동 | `--follow-up` |
 | 이미지마다 프롬프트와 옵션을 옆에 저장 | 아니요 | 예 |
+| 배치 결과를 나중 실행에서 받아 오기 | 아니요 | `--batch-result` |
+| 웹용 자르기, 변환, 배경 투명화 | 아니요 | `finish.py` |
 | 프롬프트 작성 가이드와 템플릿 | 아니요 | 예 |
 
 CLI는 빠르게 변하는 베타 버전이므로, 선택하기 전에 둘 다 확인해 보세요.
@@ -229,7 +251,7 @@ CLI는 빠르게 변하는 베타 버전이므로, 선택하기 전에 둘 다 �
 이 스킬은 공개 [Agent Skills](https://agentskills.io) 형식을 따르므로, `SKILL.md` 파일을 불러오는 다른 에이전트에서도 사용할 수 있습니다. 다만 Claude Code에서만 테스트했습니다.
 
 **가격이 바뀌었습니다. 무엇을 수정해야 하나요?**
-`skills/nano-banana/scripts/models.json`과, `SKILL.md` 및 이 문서의 표를 수정하세요.
+`skills/nano-banana/scripts/models.json`과, `SKILL.md`, 이 문서, 각 번역의 표를 수정하세요. 하나라도 빠지면 테스트가 알려 줍니다.
 
 **왜 참고 사진을 요구하나요?**
 참고 사진이 없으면 모델이 실제 대상의 세부 모습을 상상으로 채우기 때문에, 결과물이 그럴듯해 보이지만 틀립니다.
@@ -240,7 +262,7 @@ CLI는 빠르게 변하는 베타 버전이므로, 선택하기 전에 둘 다 �
 
 이 번역은 AI의 도움을 받아 작성되었으며, 수정 제안을 환영합니다.
 
-오프라인 테스트에는 API 키도 네트워크도 필요하지 않습니다.
+오프라인 테스트에는 API 키도 네트워크도 필요하지 않습니다(`finish.py` 테스트는 Pillow가 설치되어 있으면 실행되고, 없으면 건너뜁니다).
 
 ```bash
 python -m unittest discover -s tests
