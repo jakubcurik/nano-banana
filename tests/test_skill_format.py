@@ -63,6 +63,12 @@ class ManifestTests(unittest.TestCase):
         skill_version = frontmatter((SKILL_DIR / "SKILL.md").read_text(encoding="utf-8"))["metadata.version"].strip('"')
         self.assertEqual(self.load("plugin.json")["version"], skill_version)
 
+    def test_changelog_top_version_matches_the_plugin(self):
+        changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        top = re.search(r"^## \[(\d+\.\d+\.\d+)\]", changelog, re.M)
+        self.assertIsNotNone(top, "CHANGELOG.md has no version heading")
+        self.assertEqual(top.group(1), self.load("plugin.json")["version"])
+
     def test_marketplace_lists_the_plugin(self):
         plugin = self.load("plugin.json")
         marketplace = self.load("marketplace.json")
