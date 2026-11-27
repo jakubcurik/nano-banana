@@ -266,6 +266,7 @@ class RunTests(unittest.TestCase):
         first_saved = out.index("Saved: ")
         self.assertLess(first_saved, out.index("Real cost"))  # printed as soon as the file exists
         self.assertIn("Image 3 of 4 failed: RuntimeError: boom", err)
+        self.assertIn("Retry: Unexpected error: the outcome is uncertain", err)
         self.assertIn("1 more image(s) were not attempted", err)
         self.assertIn("2 of 4 images saved", err)
 
@@ -280,6 +281,55 @@ class RunTests(unittest.TestCase):
         code, _, err = self.run_count(fake_client(KeyboardInterrupt()))
         self.assertEqual(code, 130)
         self.assertIn("interrupted", err)
+
+
+class StatusError(Exception):
+    """Like the SDK's errors: an HTTP status on the exception itself."""
+
+    def __init__(self, status_code):
+        super().__init__(f"HTTP {status_code}")
+        self.status_code = status_code
+
+
+class ReadTimeout(Exception):
+    pass
+
+
+class ErrorClassificationTests(unittest.TestCase):
+    def test_client_errors_are_safe_to_retry(self):
+        for status in (400, 401, 403, 404):
+            safe, verdict = generate.classify_error(StatusError(status))
+            self.assertTrue(safe, status)
+            self.assertIn("not", verdict)
+
+    def test_rate_limit_is_safe_after_a_pause(self):
+        safe, verdict = generate.classify_error(StatusError(429))
+        self.assertTrue(safe)
+        self.assertIn("not billed", verdict)
+
+    def test_server_errors_and_timeouts_are_uncertain(self):
+        for exc in (StatusError(500), StatusError(503), StatusError(408), ReadTimeout("slow"), ValueError("?")):
+            safe, verdict = generate.classify_error(exc)
+            self.assertFalse(safe, exc)
+            self.assertIn("may have been generated and billed", verdict)
+        self.assertIn("Timeout", generate.classify_error(ReadTimeout("slow"))[1])
+
+    def test_status_from_code_or_response(self):
+        exc = Exception("x")
+        exc.code = 400
+        self.assertEqual(generate.error_status(exc), 400)
+        exc = Exception("y")
+        exc.response = SimpleNamespace(status_code=502)
+        self.assertEqual(generate.error_status(exc), 502)
+
+    def test_failed_run_prints_the_verdict(self):
+        args = parse("x")
+        err = io.StringIO()
+        with redirect_stdout(io.StringIO()), redirect_stderr(err):
+            code = generate.run_interactions(fake_client(StatusError(400)), args, generate.MODELS["2.1"], [],
+                                             None, Path(tempfile.gettempdir()), None, 0.0336)
+        self.assertEqual(code, 1)
+        self.assertIn("Retry: The API rejected the request (400)", err.getvalue())
 
 
 class FileTests(unittest.TestCase):

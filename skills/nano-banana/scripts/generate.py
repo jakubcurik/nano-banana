@@ -421,6 +421,45 @@ def describe(exc):
     return f"{type(exc).__name__}: {text[:500]}" if text else type(exc).__name__
 
 
+def error_status(exc):
+    """The HTTP status of an API exception, or None (timeouts, dropped connections, unknown errors).
+
+    google-genai raises errors with `status_code` (Interactions API) or `code` (other APIs).
+    """
+    for holder in (exc, getattr(exc, "response", None), getattr(exc, "raw_response", None)):
+        for attr in ("status_code", "code"):
+            value = getattr(holder, attr, None)
+            if isinstance(value, int) and 100 <= value <= 599:
+                return value
+    return None
+
+
+def classify_error(exc):
+    """(retry_is_safe, verdict) for an exception raised by an API call.
+
+    A 4xx answer means Google rejected the request before generating anything, so nothing was
+    billed and a corrected retry is safe. A 5xx answer, a timeout or a dropped connection leaves
+    the outcome open: the image may have been generated and billed.
+    """
+    status = error_status(exc)
+    if status == 429:
+        return True, ("Rate limit or quota exceeded (429). The request was rejected and not billed. "
+                      "Retrying is safe after a pause or once the quota allows it.")
+    if status is not None and 400 <= status < 500 and status not in (408, 499):
+        return True, (f"The API rejected the request ({status}), so nothing was generated or billed. "
+                      "Fix the cause (options, prompt, key, billing); retrying after that is safe.")
+    if status is not None and status >= 500:
+        what = f"Server error ({status})"
+    elif status is not None:
+        what = f"HTTP {status}"
+    elif any(word in type(exc).__name__.lower() for word in ("timeout", "connect", "network", "noresponse")):
+        what = "Timeout or dropped connection"
+    else:
+        what = "Unexpected error"
+    return False, (f"{what}: the outcome is uncertain, the image may have been generated and billed. "
+                   "Do not retry blindly; tell the user and let them decide.")
+
+
 def run_interactions(client, a, model, images, previous_id, out_dir, fx, estimate):
     """Make a.count calls and return the exit code.
 
@@ -444,8 +483,10 @@ def run_interactions(client, a, model, images, previous_id, out_dir, fx, estimat
             interrupted = True
             break
         except Exception as exc:
+            _, verdict = classify_error(exc)
             print(f"{label} failed: {describe(exc)}", file=sys.stderr)
-            problems.append(f"{label} failed: {describe(exc)}")
+            print(f"Retry: {verdict}", file=sys.stderr)
+            problems.append(f"{label} failed. {verdict}")
             break
         results = images_from_interaction(response)
         suggestions = suggestions_from_interaction(response) if a.search else None
