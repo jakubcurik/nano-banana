@@ -1,6 +1,6 @@
 # Prompting guide for Nano Banana
 
-Based on Google's [image generation guide](https://ai.google.dev/gemini-api/docs/image-generation) (checked 26 Nov 2026). Sections 5 and 6 come from community sources and from my own experiments on 26 Oct 2026. Keep the templates in English: the models work best in English.
+Based on Google's [image generation guide](https://ai.google.dev/gemini-api/docs/image-generation) (checked 28 Nov 2026). Sections 5 and 6 come from community sources and from my own experiments on 26 Oct 2026. Keep the templates in English: the models work best in English.
 
 ## Contents
 
@@ -76,6 +76,21 @@ Make a [N] panel comic in a [style]. Put the character in a [type of scene].
 ```
 Supply the character as an input image (`-i`) to keep it the same across panels.
 
+**Series with the same character or style** (mascot scenes, an icon set, a 360° view)
+```
+Using the provided image of [character / the established style] as the reference,
+create [new scene / next item]. Keep [face, proportions, colors, outline, rendering]
+exactly the same. [What is new in this image].
+```
+Pass the best earlier image with `-i` every time. Google's guide advises including previously generated images in later prompts to keep a character consistent, and a reference image of the pose for complex poses. Limits: 2.1 and 2 keep up to 4 characters and 10 objects faithful, Pro 5 characters, 6 objects and 3 style references; 14 images in total.
+
+**Icon or logo to cut out** (for a transparent background with `finish.py --transparent`)
+```
+A [style] icon of [subject], centered with generous margin, on a plain, solid
+[light grey / white] background with no shadow, no gradient and no texture.
+```
+Pick a background color the subject does not contain, and ask for no shadow: the cut-out removes one flat color and keeps shadows.
+
 **With search** (`--search`) for current or factual information
 ```
 Use search to find [information]. Create a [image type] showing [what] in [style].
@@ -135,6 +150,8 @@ Describe the detail that must not change as precisely as you can.
 | "cinematic / studio lighting" for a real-life photo | One concrete light source with a direction. |
 | Concluding "format A is better" from one image | At least 3-4 images per variant (`-n`), otherwise you compare chance. |
 | Same prompt again in 4K or portrait, expecting the same image | A new generation gives a different image. Follow up on the finished one (`--follow-up` with `-s` / `-a`). |
+| "1200x630 pixels" or "transparent background" in the prompt | Generate the nearest aspect ratio on a flat background, then `finish.py --size 1200x630` / `--transparent`. |
+| A series where every image is prompted from text alone | Pass the best earlier image with `-i` as the reference for character or style. |
 
 ## 5. JSON prompts
 
