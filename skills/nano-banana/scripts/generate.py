@@ -150,7 +150,7 @@ def check(a, model):
     if total > MAX_INPUT_BYTES:
         errors.append(f"The input images add up to {total / 1e6:.1f} MB, above the limit of about "
                       f"{MAX_INPUT_BYTES / 1e6:.0f} MB for images sent with a request (20 MB per request after "
-                      "encoding). Make them smaller first: fewer pixels or JPEG.")
+                      "encoding). Make them smaller first, e.g. scripts/finish.py IMAGE --size 2048x --format jpeg.")
     if a.name is not None and not re.search(r"[A-Za-z0-9]", a.name):
         errors.append("--name needs at least one letter or digit.")
     if a.count < 1:
