@@ -1,12 +1,14 @@
 {
-  "updated": "2026-11-26",
+  "updated": "2026-11-28",
   "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
   "notes": [
     "price/batch are USD per generated image, standard and batch (null = no batch price published or verified).",
-    "per_million_image_tokens is USD per 1M output image tokens, used to compute the real cost after a call.",
-    "Prices and model lists change. Update this file, not the script."
+    "per_million_* are USD per 1M tokens: image output, text and thinking output, and input (text and images). They turn the usage the API reports into the real cost after a call.",
+    "batch_factor scales the token rates for batch jobs (Google's batch prices are half the standard ones).",
+    "Prices and model lists change. Update this file, not the script, and the price tables in SKILL.md and the READMEs (a test checks they agree)."
   ],
   "search_pricing": "5,000 grounded prompts per month are free, then 14 USD per 1,000 search queries.",
+  "batch_factor": 0.5,
   "models": {
     "2.1": {
       "id": "gemini-nano-banana-2.1",
@@ -18,6 +20,8 @@
         "4K": {"price": 0.113, "batch": 0.0567}
       },
       "per_million_image_tokens": 30.0,
+      "per_million_text_tokens": 7.5,
+      "per_million_input_tokens": 1.5,
       "thinking": ["minimal", "medium", "high"],
       "search": true,
       "extreme_aspect_ratios": true,
@@ -34,6 +38,8 @@
         "4K": {"price": 0.151, "batch": null}
       },
       "per_million_image_tokens": 60.0,
+      "per_million_text_tokens": 3.0,
+      "per_million_input_tokens": 0.5,
       "thinking": ["minimal", "high"],
       "search": true,
       "extreme_aspect_ratios": true,
@@ -49,6 +55,8 @@
         "4K": {"price": 0.24, "batch": null}
       },
       "per_million_image_tokens": 120.0,
+      "per_million_text_tokens": 12.0,
+      "per_million_input_tokens": 2.0,
       "thinking": [],
       "search": true,
       "extreme_aspect_ratios": false,
@@ -62,6 +70,8 @@
         "1K": {"price": 0.0336, "batch": 0.0168}
       },
       "per_million_image_tokens": 30.0,
+      "per_million_text_tokens": 1.5,
+      "per_million_input_tokens": 0.25,
       "thinking": ["minimal", "high"],
       "search": false,
       "extreme_aspect_ratios": false,

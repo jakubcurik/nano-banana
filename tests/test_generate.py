@@ -4,8 +4,10 @@ Run:  python -m unittest discover -s tests
 """
 import base64
 import importlib.util
+import io
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -82,14 +84,21 @@ class PriceTests(unittest.TestCase):
 
 class CatalogTests(unittest.TestCase):
     def test_every_model_is_complete(self):
-        required = {"id", "name", "sizes", "per_million_image_tokens", "thinking", "search",
-                    "extreme_aspect_ratios", "max_input_images"}
+        required = {"id", "name", "sizes", "per_million_image_tokens", "per_million_text_tokens",
+                    "per_million_input_tokens", "thinking", "search", "extreme_aspect_ratios", "max_input_images"}
         for key, model in generate.MODELS.items():
             self.assertTrue(required <= set(model), key)
             for size, price in model["sizes"].items():
                 self.assertGreater(price["price"], 0, f"{key} {size}")
                 if price["batch"] is not None:
                     self.assertLess(price["batch"], price["price"], f"{key} {size}")
+
+    def test_per_image_price_matches_token_rate(self):
+        # Google's per-image prices are image tokens times the image rate; 1K images are 1120 tokens.
+        for key, model in generate.MODELS.items():
+            if "1K" in model["sizes"]:
+                self.assertAlmostEqual(1120 * model["per_million_image_tokens"] / 1e6,
+                                       model["sizes"]["1K"]["price"], places=3, msg=key)
 
 
 class HelperTests(unittest.TestCase):
@@ -144,6 +153,52 @@ class ResponseParsingTests(unittest.TestCase):
         dump = {"result": [{"search_suggestions": "<div>s</div>"}, {"search_suggestions": "<div>s</div>"}]}
         step = SimpleNamespace(type="google_search_result", model_dump=lambda: dump)
         self.assertEqual(generate.suggestions_from_interaction(interaction([step])), ["<div>s</div>"])
+
+
+def interaction_usage(image=1120, text=0, thinking=1000, input_tokens=15):
+    by_modality = [SimpleNamespace(modality="image", tokens=image)]
+    if text:
+        by_modality.append(SimpleNamespace(modality="text", tokens=text))
+    return SimpleNamespace(total_input_tokens=input_tokens, output_tokens_by_modality=by_modality,
+                           total_output_tokens=image + text, total_thought_tokens=thinking)
+
+
+class CostTests(unittest.TestCase):
+    def test_counts_from_interactions_usage(self):
+        counts = generate.token_counts(interaction_usage(text=7))
+        self.assertEqual(counts, {"input": 15, "image": 1120, "text": 7, "thinking": 1000})
+
+    def test_counts_from_generate_content_usage(self):
+        usage = SimpleNamespace(prompt_token_count=20, thoughts_token_count=300, candidates_token_count=1120,
+                                candidates_tokens_details=[SimpleNamespace(modality="MediaModality.IMAGE",
+                                                                           token_count=1120)])
+        self.assertEqual(generate.token_counts(usage), {"input": 20, "image": 1120, "text": 0, "thinking": 300})
+
+    def test_counts_without_modality_breakdown(self):
+        usage = SimpleNamespace(total_input_tokens=10, output_tokens_by_modality=None,
+                                total_output_tokens=1200, total_thought_tokens=None)
+        self.assertEqual(generate.token_counts(usage), {"input": 10, "image": 0, "text": 1200, "thinking": 0})
+
+    def test_no_usage(self):
+        self.assertIsNone(generate.token_counts(None))
+
+    def test_cost_adds_thinking_and_input(self):
+        counts = generate.token_counts(interaction_usage())
+        costs = generate.cost_usd(counts, generate.MODELS["2.1"])
+        self.assertAlmostEqual(costs["image"], 0.0336)
+        self.assertAlmostEqual(costs["text"], 1000 * 7.5 / 1e6)
+        self.assertAlmostEqual(costs["input"], 15 * 1.5 / 1e6)
+        batch = generate.cost_usd(counts, generate.MODELS["2.1"], batch=True)
+        self.assertAlmostEqual(sum(batch.values()), sum(costs.values()) / 2)
+
+    def test_print_usage_returns_total(self):
+        response = interaction(usage=interaction_usage())
+        with redirect_stdout(io.StringIO()) as out:
+            total = generate.print_usage(response, generate.MODELS["2.1"], None, "USD")
+        self.assertAlmostEqual(total, 0.0336 + 0.0075 + 0.0000225)
+        self.assertIn("Real cost: 0.0411 USD", out.getvalue())
+        with redirect_stdout(io.StringIO()):
+            self.assertIsNone(generate.print_usage(interaction(), generate.MODELS["2.1"], None, "USD"))
 
 
 class FileTests(unittest.TestCase):

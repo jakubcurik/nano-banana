@@ -218,16 +218,70 @@ def suggestions_from_interaction(response):
     return list(dict.fromkeys(found))  # the API repeats the same snippet
 
 
-def print_usage(response, model, fx, currency):
-    usage = response.usage
-    if not usage:
-        return
-    image_tokens = sum(m.tokens or 0 for m in (usage.output_tokens_by_modality or [])
-                       if str(m.modality).lower().endswith("image"))
-    cost = image_tokens / 1e6 * model["per_million_image_tokens"]
-    print(f"Usage: {image_tokens} image tokens = {money(cost, fx, currency)}; "
-          f"thinking {usage.total_thought_tokens or 0} tokens, input {usage.total_input_tokens or 0} tokens "
-          "(thinking and input are billed separately, fractions of a cent)")
+# ---------- real cost from the reported usage ----------
+
+def modality_tokens(entries, image):
+    """Sum the tokens of image (image=True) or non-image (image=False) entries of a per-modality list."""
+    total = 0
+    for entry in entries or []:
+        tokens = getattr(entry, "tokens", None)
+        if tokens is None:
+            tokens = getattr(entry, "token_count", None)
+        if str(getattr(entry, "modality", "")).lower().endswith("image") == image:
+            total += tokens or 0
+    return total
+
+
+def token_counts(usage):
+    """Billed tokens as {"input", "image", "text", "thinking"}, or None when the response has no usage.
+
+    Accepts both shapes the SDK returns: the Interactions API `usage` (total_input_tokens,
+    output_tokens_by_modality, total_thought_tokens) and the generateContent `usage_metadata`
+    used by batch jobs (prompt_token_count, candidates_tokens_details, thoughts_token_count).
+    """
+    if usage is None:
+        return None
+    if getattr(usage, "total_input_tokens", None) is not None or getattr(usage, "output_tokens_by_modality", None):
+        by_modality = getattr(usage, "output_tokens_by_modality", None)
+        total_output = getattr(usage, "total_output_tokens", None) or 0
+        input_tokens = getattr(usage, "total_input_tokens", None) or 0
+        thinking = getattr(usage, "total_thought_tokens", None) or 0
+    else:
+        by_modality = getattr(usage, "candidates_tokens_details", None)
+        total_output = getattr(usage, "candidates_token_count", None) or 0
+        input_tokens = getattr(usage, "prompt_token_count", None) or 0
+        thinking = getattr(usage, "thoughts_token_count", None) or 0
+    image = modality_tokens(by_modality, True)
+    text = modality_tokens(by_modality, False) if by_modality else max(total_output - image, 0)
+    return {"input": input_tokens, "image": image, "text": text, "thinking": thinking}
+
+
+def cost_usd(counts, model, batch=False):
+    """USD per part: image output, text and thinking output, input. Batch jobs get the batch discount."""
+    factor = CATALOG["batch_factor"] if batch else 1.0
+    return {
+        "image": counts["image"] / 1e6 * model["per_million_image_tokens"] * factor,
+        "text": (counts["text"] + counts["thinking"]) / 1e6 * model["per_million_text_tokens"] * factor,
+        "input": counts["input"] / 1e6 * model["per_million_input_tokens"] * factor,
+    }
+
+
+def cost_line(counts, costs, fx, currency):
+    total = sum(costs.values())
+    thinking = f"thinking {counts['thinking']}" + (f" + text {counts['text']}" if counts["text"] else "")
+    return (f"Real cost: {money(total, fx, currency)} = image {counts['image']} tokens {costs['image']:.4f}"
+            f" + {thinking} tokens {costs['text']:.4f} + input {counts['input']} tokens {costs['input']:.4f}")
+
+
+def print_usage(response, model, fx, currency, batch=False):
+    """Print the real cost of one response and return it in USD (None when the API reported no usage)."""
+    counts = token_counts(getattr(response, "usage", None) or getattr(response, "usage_metadata", None))
+    if counts is None:
+        print("Real cost: unknown, the API reported no usage for this call.")
+        return None
+    costs = cost_usd(counts, model, batch)
+    print(cost_line(counts, costs, fx, currency))
+    return sum(costs.values())
 
 
 # ---------- Batch API (generateContent format) ----------
@@ -327,7 +381,7 @@ def main():
           f"{a.count}x {'batch' if a.batch else 'standard'}"
           + (f", thinking {a.thinking}" if a.thinking else "") + (", with search" if a.search else ""))
     print(f"Estimated cost: {money(usd, fx, a.currency)}, image output only; "
-          "prompt and thinking tokens are billed separately (fractions of a cent)")
+          "thinking and input tokens come on top (see the real cost after the call)")
     if a.search:
         print(f"Search grounding is billed separately: {CATALOG['search_pricing']}")
     if a.estimate:
@@ -350,6 +404,7 @@ def main():
             sys.exit(f"Nothing to follow up on: {last_id_file} is missing.")
 
     saved = []
+    total_usd = 0.0
     if a.batch:
         for data, mime in run_batch(client, a, model, images):
             saved.append(save_image(data, mime, a.prompt, out_dir, len(saved)))
@@ -373,7 +428,10 @@ def main():
             if response.id and not a.no_store:
                 last_id_file.write_text(response.id, encoding="utf-8")
                 print(f"Interaction ID: {response.id} (continue with --follow-up)")
-            print_usage(response, model, fx, a.currency)
+            total_usd += print_usage(response, model, fx, a.currency) or 0.0
+        if a.count > 1:
+            print(f"Total for this run: {money(total_usd, fx, a.currency)} ({a.count} calls, estimate was "
+                  f"{usd:.4f} USD for the images alone)")
 
     for path in saved:
         print(f"Saved: {path}")
