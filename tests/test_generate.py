@@ -10,6 +10,7 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).resolve().parent.parent / "skills" / "nano-banana" / "scripts" / "generate.py"
 spec = importlib.util.spec_from_file_location("generate", SCRIPT)
@@ -284,6 +285,49 @@ class RunTests(unittest.TestCase):
         code, _, err = self.run_count(fake_client(KeyboardInterrupt()))
         self.assertEqual(code, 130)
         self.assertIn("interrupted", err)
+
+
+def run_main(*argv):
+    """generate.main() with captured output: (exit code or message, stdout, stderr). Never calls the API."""
+    out, err = io.StringIO(), io.StringIO()
+    result = 0
+    with redirect_stdout(out), redirect_stderr(err):
+        try:
+            generate.main(list(argv))
+        except SystemExit as exc:
+            result = exc.code
+    return result, out.getvalue(), err.getvalue()
+
+
+class CostGuardTests(unittest.TestCase):
+    def test_within_the_limit(self):
+        self.assertIsNone(generate.cost_guard(0.50, 0.50))
+        self.assertIsNone(generate.cost_guard(0.0336 * 4, 0.50))
+
+    def test_above_the_limit_names_price_and_new_limit(self):
+        message = generate.cost_guard(0.113 * 20, 0.50)
+        self.assertIn("2.2600 USD", message)
+        self.assertIn("--max-cost 2.26", message)
+        self.assertIn("go-ahead", message)
+
+    def test_needed_limit_rounds_up_to_cents(self):
+        self.assertEqual(generate.needed_limit(0.6048), 0.61)
+        self.assertEqual(generate.needed_limit(0.60), 0.60)
+
+    def test_large_run_stops_before_any_api_call(self):
+        with patch.object(generate, "api_key", side_effect=AssertionError("must not get this far")):
+            result, out, _ = run_main("x", "-n", "20", "-s", "4K")
+        self.assertIn("Stopped before calling the API", result)
+        self.assertIn("Estimated cost: 2.2600 USD", out)
+
+    def test_estimate_is_not_blocked(self):
+        result, out, _ = run_main("x", "-n", "20", "-s", "4K", "--estimate")
+        self.assertEqual(result, 0)
+        self.assertIn("a real run needs --max-cost 2.26", out)
+
+    def test_negative_limit_is_rejected(self):
+        args = parse("x", "--max-cost", "-1")
+        self.assertTrue(generate.check(args, generate.MODELS["2.1"]))
 
 
 class StatusError(Exception):

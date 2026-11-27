@@ -18,6 +18,7 @@ The API key is read from GEMINI_API_KEY (or GOOGLE_API_KEY), otherwise from
 import argparse
 import base64
 import json
+import math
 import mimetypes
 import os
 import re
@@ -39,6 +40,7 @@ LAST_ID_FILE = "last-interaction.txt"
 CNB_URL = ("https://www.cnb.cz/cs/financni-trhy/devizovy-trh/kurzy-devizoveho-trhu/"
            "kurzy-devizoveho-trhu/denni_kurz.txt")
 IMAGE_FORMATS = {"png": "image/png", "jpeg": "image/jpeg"}
+DEFAULT_MAX_COST = 0.50  # USD; above this the script stops until the user raises --max-cost
 
 
 # ---------- money ----------
@@ -105,6 +107,8 @@ def check(a, model):
             errors.append(f"Input image not found: {path}")
     if a.count < 1:
         errors.append("--count must be at least 1.")
+    if a.max_cost < 0:
+        errors.append("--max-cost cannot be negative.")
     if a.batch:
         if a.follow_up:
             errors.append("--follow-up cannot be combined with --batch.")
@@ -121,6 +125,20 @@ def check(a, model):
 def estimate_usd(a, model):
     price = model["sizes"][a.size]
     return (price["batch"] if a.batch else price["price"]) * a.count
+
+
+def needed_limit(usd):
+    """The smallest --max-cost, in whole cents, that lets an estimate of `usd` through."""
+    return math.ceil(round(usd * 100, 6)) / 100
+
+
+def cost_guard(usd, limit):
+    """None when the estimate is within the limit, otherwise the message to stop with."""
+    if usd <= limit + 1e-9:
+        return None
+    return (f"Stopped before calling the API: the estimated cost {usd:.4f} USD is above the limit of "
+            f"{limit:.2f} USD (--max-cost). Tell the user the price and ask for their go-ahead. "
+            f"Only if they agree, rerun with --max-cost {needed_limit(usd):.2f}.")
 
 
 # ---------- files ----------
@@ -368,15 +386,18 @@ def build_parser():
                     help="ask Google not to store the interaction (disables --follow-up on this result)")
     ap.add_argument("--batch", action="store_true", help="half price, the result can take up to 24 h")
     ap.add_argument("--estimate", action="store_true", help="only print the price estimate, generate nothing")
+    ap.add_argument("--max-cost", type=float, default=DEFAULT_MAX_COST, metavar="USD",
+                    help=f"stop before calling the API when the estimate is above this (default {DEFAULT_MAX_COST:.2f})")
     ap.add_argument("--currency", default="USD",
                     help="also show prices in this currency (ISO code, rate from the Czech National Bank)")
     return ap
 
 
-def main():
+def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
-        stream.reconfigure(encoding="utf-8")
-    a = build_parser().parse_args()
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+    a = build_parser().parse_args(argv)
     if a.prompt_file:
         a.prompt = Path(a.prompt_file).read_text(encoding="utf-8").strip()
     a.size = "512" if a.size.lower() in ("512", "0.5k") else a.size.upper()
@@ -396,8 +417,14 @@ def main():
           "thinking and input tokens come on top (see the real cost after the call)")
     if a.search:
         print(f"Search grounding is billed separately: {CATALOG['search_pricing']}")
+    over_limit = cost_guard(usd, a.max_cost)
     if a.estimate:
+        if over_limit:
+            print(f"Note: this is above the --max-cost limit of {a.max_cost:.2f} USD; a real run needs "
+                  f"--max-cost {needed_limit(usd):.2f} after the user agrees.")
         return
+    if over_limit:
+        sys.exit(over_limit)
 
     from google import genai
 
