@@ -124,9 +124,9 @@ Dál potřebuješ:
 Klíč předej skriptu přes proměnnou prostředí, nebo ho jednou ulož mimo jakýkoli repozitář:
 
 ```bash
-export GEMINI_API_KEY="tvuj-klic"
+export GEMINI_API_KEY="your-key"
 # nebo
-mkdir -p ~/.config/nano-banana && printf '%s' "tvuj-klic" > ~/.config/nano-banana/api-key
+mkdir -p ~/.config/nano-banana && printf '%s' "your-key" > ~/.config/nano-banana/api-key
 ```
 
 ## Rychlý start
