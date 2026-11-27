@@ -5,6 +5,8 @@ Run:  python -m unittest discover -s tests
 import base64
 import importlib.util
 import io
+import json
+import os
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -18,8 +20,13 @@ generate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(generate)
 
 
+NO_CONFIG = Path(__file__).resolve().parent / "no-such-config.json"
+CLEAN_ENV = {k: v for k, v in os.environ.items() if not k.startswith("NANO_BANANA_")}
+
+
 def parse(*argv):
     args = generate.build_parser().parse_args(list(argv))
+    generate.apply_settings(args, env={}, config_file=NO_CONFIG)
     args.size = args.size.upper()
     return args
 
@@ -291,7 +298,8 @@ def run_main(*argv):
     """generate.main() with captured output: (exit code or message, stdout, stderr). Never calls the API."""
     out, err = io.StringIO(), io.StringIO()
     result = 0
-    with redirect_stdout(out), redirect_stderr(err):
+    with redirect_stdout(out), redirect_stderr(err), patch.object(generate, "CONFIG_FILE", NO_CONFIG), \
+            patch.dict(os.environ, CLEAN_ENV, clear=True):
         try:
             generate.main(list(argv))
         except SystemExit as exc:
@@ -328,6 +336,48 @@ class CostGuardTests(unittest.TestCase):
     def test_negative_limit_is_rejected(self):
         args = parse("x", "--max-cost", "-1")
         self.assertTrue(generate.check(args, generate.MODELS["2.1"]))
+
+
+class SettingsTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.config = Path(self.tmp.name) / "config.json"
+        self.config.write_text(json.dumps({"currency": "eur", "max_cost": 2}), encoding="utf-8")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def settle(self, argv, env):
+        args = generate.build_parser().parse_args(argv)
+        return generate.apply_settings(args, env=env, config_file=self.config)
+
+    def test_built_in_defaults(self):
+        args = generate.apply_settings(generate.build_parser().parse_args(["x"]), env={}, config_file=NO_CONFIG)
+        self.assertEqual((args.currency, args.max_cost), ("USD", 0.5))
+
+    def test_config_file_beats_defaults(self):
+        args = self.settle(["x"], {})
+        self.assertEqual((args.currency, args.max_cost), ("EUR", 2.0))
+
+    def test_environment_beats_config_file(self):
+        args = self.settle(["x"], {"NANO_BANANA_CURRENCY": "CZK", "NANO_BANANA_MAX_COST": "1.5"})
+        self.assertEqual((args.currency, args.max_cost), ("CZK", 1.5))
+
+    def test_command_line_beats_everything(self):
+        args = self.settle(["x", "--currency", "GBP", "--max-cost", "0.1"],
+                           {"NANO_BANANA_CURRENCY": "CZK", "NANO_BANANA_MAX_COST": "1.5"})
+        self.assertEqual((args.currency, args.max_cost), ("GBP", 0.1))
+
+    def test_empty_environment_value_is_ignored(self):
+        args = self.settle(["x"], {"NANO_BANANA_MAX_COST": ""})
+        self.assertEqual(args.max_cost, 2.0)
+
+    def test_bad_values_stop_with_a_message(self):
+        with self.assertRaises(SystemExit):
+            self.settle(["x"], {"NANO_BANANA_MAX_COST": "lots"})
+        self.config.write_text("[1, 2]", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            self.settle(["x"], {})
 
 
 class StatusError(Exception):

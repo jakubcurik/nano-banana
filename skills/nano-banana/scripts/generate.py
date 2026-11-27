@@ -41,6 +41,8 @@ CNB_URL = ("https://www.cnb.cz/cs/financni-trhy/devizovy-trh/kurzy-devizoveho-tr
            "kurzy-devizoveho-trhu/denni_kurz.txt")
 IMAGE_FORMATS = {"png": "image/png", "jpeg": "image/jpeg"}
 DEFAULT_MAX_COST = 0.50  # USD; above this the script stops until the user raises --max-cost
+DEFAULT_CURRENCY = "USD"
+CONFIG_FILE = Path.home() / ".config" / "nano-banana" / "config.json"
 
 
 # ---------- money ----------
@@ -84,6 +86,35 @@ def api_key():
                  "Create one at https://aistudio.google.com/apikey (billing must be enabled: "
                  "image models have no free tier).")
     return key
+
+
+def apply_settings(a, env=None, config_file=None):
+    """Fill in --currency and --max-cost: command line first, then the environment variables
+    NANO_BANANA_CURRENCY / NANO_BANANA_MAX_COST, then ~/.config/nano-banana/config.json
+    ({"currency": "EUR", "max_cost": 1.0}), then the built-in defaults."""
+    env = os.environ if env is None else env
+    config_file = CONFIG_FILE if config_file is None else Path(config_file)
+    config = {}
+    if config_file.is_file():
+        try:
+            config = json.loads(config_file.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            sys.exit(f"Cannot read {config_file}: {exc}")
+        if not isinstance(config, dict):
+            sys.exit(f"{config_file} must hold a JSON object such as {{\"currency\": \"EUR\", \"max_cost\": 1.0}}.")
+
+    def first(*values):
+        return next((v for v in values if v not in (None, "")), None)
+
+    a.currency = str(first(a.currency, env.get("NANO_BANANA_CURRENCY"), config.get("currency"),
+                           DEFAULT_CURRENCY)).strip().upper()
+    max_cost = first(a.max_cost, env.get("NANO_BANANA_MAX_COST"), config.get("max_cost"), DEFAULT_MAX_COST)
+    try:
+        a.max_cost = float(max_cost)
+    except (TypeError, ValueError):
+        sys.exit(f"The cost limit must be a number in USD, got {max_cost!r} "
+                 "(from NANO_BANANA_MAX_COST or the config file).")
+    return a
 
 
 def check(a, model):
@@ -386,10 +417,12 @@ def build_parser():
                     help="ask Google not to store the interaction (disables --follow-up on this result)")
     ap.add_argument("--batch", action="store_true", help="half price, the result can take up to 24 h")
     ap.add_argument("--estimate", action="store_true", help="only print the price estimate, generate nothing")
-    ap.add_argument("--max-cost", type=float, default=DEFAULT_MAX_COST, metavar="USD",
-                    help=f"stop before calling the API when the estimate is above this (default {DEFAULT_MAX_COST:.2f})")
-    ap.add_argument("--currency", default="USD",
-                    help="also show prices in this currency (ISO code, rate from the Czech National Bank)")
+    ap.add_argument("--max-cost", type=float, metavar="USD",
+                    help="stop before calling the API when the estimate is above this (default "
+                         f"{DEFAULT_MAX_COST:.2f}, or NANO_BANANA_MAX_COST, or max_cost in the config file)")
+    ap.add_argument("--currency",
+                    help="also show prices in this currency (ISO code, rate from the Czech National Bank; "
+                         "default USD, or NANO_BANANA_CURRENCY, or currency in the config file)")
     return ap
 
 
@@ -397,7 +430,7 @@ def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
-    a = build_parser().parse_args(argv)
+    a = apply_settings(build_parser().parse_args(argv))
     if a.prompt_file:
         a.prompt = Path(a.prompt_file).read_text(encoding="utf-8").strip()
     a.size = "512" if a.size.lower() in ("512", "0.5k") else a.size.upper()
