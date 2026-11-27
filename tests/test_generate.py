@@ -443,6 +443,32 @@ class FileTests(unittest.TestCase):
         self.assertIn("a-red-apple", path.name)
         self.assertEqual(path.read_bytes(), b"jpegdata")
 
+    def test_follow_up_by_image_path_reads_the_sidecar(self):
+        image = self.dir / "pick.png"
+        image.write_bytes(b"x")
+        generate.save_sidecar(image, parse("A red apple", "-i", __file__), "v1_picked", "v1_before")
+        self.assertEqual(generate.resolve_interaction(str(image), self.dir), "v1_picked")
+        self.assertEqual(generate.resolve_interaction(str(image.with_suffix(".txt")), self.dir), "v1_picked")
+
+    def test_follow_up_last_and_explicit_id(self):
+        (self.dir / generate.LAST_ID_FILE).write_text("v1_last\n", encoding="utf-8")
+        self.assertEqual(generate.resolve_interaction("last", self.dir), "v1_last")
+        self.assertEqual(generate.resolve_interaction("v1_given", self.dir), "v1_given")
+
+    def test_follow_up_errors_are_explained(self):
+        with self.assertRaises(SystemExit) as missing_last:
+            generate.resolve_interaction("last", self.dir)
+        self.assertIn("missing", str(missing_last.exception.code))
+        with self.assertRaises(SystemExit) as no_sidecar:
+            generate.resolve_interaction(str(self.dir / "gone.png"), self.dir)
+        self.assertIn("unknown", str(no_sidecar.exception.code))
+        image = self.dir / "batch.png"
+        image.write_bytes(b"x")
+        generate.save_sidecar(image, parse("x"), batch_job="batches/1")
+        with self.assertRaises(SystemExit) as no_id:
+            generate.resolve_interaction(str(image), self.dir)
+        self.assertIn("no interaction ID", str(no_id.exception.code))
+
     def test_sidecar_holds_prompt_options_and_id(self):
         image = self.dir / "x.png"
         args = parse("A red apple", "-a", "16:9", "--search")

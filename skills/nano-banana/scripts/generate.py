@@ -42,6 +42,7 @@ CNB_URL = ("https://www.cnb.cz/cs/financni-trhy/devizovy-trh/kurzy-devizoveho-tr
 IMAGE_FORMATS = {"png": "image/png", "jpeg": "image/jpeg"}
 DEFAULT_MAX_COST = 0.50  # USD; above this the script stops until the user raises --max-cost
 DEFAULT_CURRENCY = "USD"
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".txt"}
 CONFIG_FILE = Path.home() / ".config" / "nano-banana" / "config.json"
 
 
@@ -202,11 +203,42 @@ def save_sidecar(path, a, interaction_id=None, previous_id=None, suggestions=Non
         options.append(f"took {seconds:.1f} s")
     if cost is not None:
         options.append(f"cost {cost:.4f} USD")
-    text ="# " + " | ".join(options) + "\n\n" + a.prompt + "\n"
+    text = "# " + " | ".join(options) + "\n\n" + a.prompt + "\n"
     if suggestions:
         text += "\n# Google Search suggestions (HTML; Google requires showing them when you publish grounded output)\n"
         text += "\n".join(suggestions) + "\n"
     path.with_suffix(".txt").write_text(text, encoding="utf-8")
+
+
+def sidecar_interaction_id(image_path):
+    """The interaction ID recorded in the .txt file next to an image, or None."""
+    sidecar = Path(image_path).with_suffix(".txt")
+    if not sidecar.is_file():
+        return None
+    header = sidecar.read_text(encoding="utf-8").partition("\n")[0].lstrip("# ")
+    for part in header.split(" | "):
+        if part.startswith("id "):
+            return part[3:].strip() or None
+    return None
+
+
+def resolve_interaction(value, out_dir):
+    """Turn "last", an image path (read from its sidecar .txt) or an ID into an interaction ID."""
+    if value == "last":
+        last_id_file = Path(out_dir) / LAST_ID_FILE
+        if not last_id_file.is_file():
+            sys.exit(f"No last interaction: {last_id_file} is missing. Pass an image path or an interaction ID.")
+        return last_id_file.read_text(encoding="utf-8").strip()
+    path = Path(value)
+    if path.is_file() or path.suffix.lower() in IMAGE_SUFFIXES:
+        if not path.with_suffix(".txt").is_file():
+            sys.exit(f"{path.with_suffix('.txt')} is missing, so the interaction behind {value} is unknown. "
+                     "Pass the interaction ID instead.")
+        found = sidecar_interaction_id(path)
+        if not found:
+            sys.exit(f"{path.with_suffix('.txt')} records no interaction ID (made with --batch or --no-store?).")
+        return found
+    return value
 
 
 def load_images(paths):
@@ -408,8 +440,10 @@ def build_parser():
     ap.add_argument("-t", "--thinking", choices=["minimal", "medium", "high"],
                     help="thinking level (2.1: minimal/medium/high, 2 and lite: minimal/high)")
     ap.add_argument("--search", action="store_true", help="Google Search grounding incl. image search (not lite)")
-    ap.add_argument("--follow-up", nargs="?", const="last", metavar="ID",
-                    help="edit the last (or the given) result with this prompt; the model remembers the image")
+    ap.add_argument("--follow-up", nargs="?", const="last", metavar="IMAGE|ID",
+                    help="edit a previous result with this prompt; the model remembers the image. Without a "
+                         "value the last result; or the path of a generated image (its .txt holds the ID); "
+                         "or an interaction ID")
     ap.add_argument("-n", "--count", type=int, default=1, help="number of images (each one is billed)")
     ap.add_argument("-o", "--out", default=".cache/nano-banana", help="output folder")
     ap.add_argument("--format", choices=IMAGE_FORMATS, help="output file format (default: what the model returns)")
@@ -459,21 +493,13 @@ def main(argv=None):
     if over_limit:
         sys.exit(over_limit)
 
+    out_dir = Path(a.out)
+    previous_id = resolve_interaction(a.follow_up, out_dir) if a.follow_up else None
     from google import genai
 
     client = genai.Client(api_key=api_key())
-    out_dir = Path(a.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     images = load_images(a.image)
-    last_id_file = out_dir / LAST_ID_FILE
-    previous_id = None
-    if a.follow_up:
-        if a.follow_up != "last":
-            previous_id = a.follow_up
-        elif last_id_file.exists():
-            previous_id = last_id_file.read_text(encoding="utf-8").strip()
-        else:
-            sys.exit(f"Nothing to follow up on: {last_id_file} is missing.")
 
     if a.batch:
         saved = []
