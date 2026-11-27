@@ -52,7 +52,7 @@ nano-banana is an agent skill that lets Claude Code and other coding agents make
 
 Ask an agent for a hero image and you get one. Ask it to "try a few more variations" and a plain API call can run a dozen 4K generations while you are still looking at the first. Every image is billed, and nothing in the chat tells you how much.
 
-This skill prints the estimated price before each call and the real cost after it. It checks your options against what the chosen model supports, so a wrong size or an unsupported thinking level fails on your machine and not at the API. For everything else it gives the agent a short routine: ask what the image is for, get reference photos when the subject has to look like something real, write the prompt in English, and look at the result before calling it done.
+This skill prints the estimated price before each call and the real cost after it, thinking and input tokens included. A run whose estimate is above your limit (0.50 USD unless you set another) stops before anything is sent. It checks your options against what the chosen model supports, so a wrong size or an unsupported thinking level fails on your machine and not at the API. For everything else it gives the agent a short routine: work out what the image is for, get reference photos when the subject has to look like something real, write the prompt in English, and look at the result before calling it done.
 
 <sub>Unofficial. Not affiliated with or endorsed by Google. "Nano Banana" and "Gemini" are Google's names for its image models and API.</sub>
 
@@ -62,7 +62,7 @@ This skill prints the estimated price before each call and the real cost after i
   <img src="assets/terminal.png" width="880" alt="Terminal output of one generation: the model, an estimated cost of 0.0504 USD, the interaction ID, the usage of 1680 image tokens for 0.0504 USD, and the saved file path.">
 </p>
 
-That is a real run. A 2K image on the default model costs about five US cents, and you see the number before the call and again after it.
+That is a real run of version 1.0. A 2K image on the default model costs about five US cents, and you see the number before the call and again after it. Since 1.1 the cost after the call also counts the thinking and input tokens, so it comes out slightly above the estimate, and the output shows how long the call took.
 
 ## Gallery
 
@@ -143,9 +143,17 @@ uv run --script $S "A flat illustration of a red apple on a white table" -a 16:9
 uv run --script $S "Make the apple green. Keep everything else the same." --follow-up
 uv run --script $S "Put this product on a marble table" -i product.jpg -m pro -s 2K
 uv run --script $S "A banner with the text \"Open daily\"" --batch -n 4 --currency EUR
+uv run --script $S --batch-result
+uv run --script $S "Same scene at dusk. Keep everything else the same." --follow-up .cache/nano-banana/20261128-101500-a-flat-illustration-2.png
+
+F=skills/nano-banana/scripts/finish.py
+uv run --script $F .cache/nano-banana/hero.png --size 1200x630 --format webp
+uv run --script $F .cache/nano-banana/icon.png --transparent
 ```
 
-Images land in `.cache/nano-banana/`, each next to a `.txt` file with the prompt, the options and the interaction ID.
+Images land in `.cache/nano-banana/`, each next to a `.txt` file with the prompt, the options, the interaction ID, how long the call took and what it cost. The folder gets its own `.gitignore`, so nothing in it ends up in git.
+
+A batch job waits at most 8 minutes (`--wait`), then the script exits and tells you how to collect it. `--batch-result` saves the images once the job is done; running it again does not duplicate them.
 
 <details>
 <summary>All options</summary>
@@ -158,27 +166,36 @@ Images land in `.cache/nano-banana/`, each next to a `.txt` file with the prompt
 | `-i photo.jpg` | input image for editing or as a reference, repeatable, max 14 |
 | `-t minimal / medium / high` | thinking level, depends on the model |
 | `--search` | Google Search grounding, including image search (not on `lite`) |
-| `--follow-up [ID]` | continue from the last result, or from a given interaction |
+| `--follow-up [IMAGE or ID]` | continue from the last result, from a picked image (its `.txt` holds the ID), or from a given interaction |
 | `-n 4` | number of images, each billed separately |
 | `-o folder` | output folder |
+| `--name hero` | file-name stem instead of the start of the prompt |
 | `--format png / jpeg` | output file format |
 | `--prompt-file file` | read the prompt from a file |
 | `--no-store` | ask Google not to keep the interaction (this disables follow-ups on it) |
+| `--delete IMAGE or ID` | delete a stored interaction at Google |
 | `--batch` | half price, up to 24 h (models 2.1 and lite) |
+| `--wait 8` | minutes to wait for a batch job before exiting, `0` to submit and exit |
+| `--batch-result [JOB]` | collect a batch job, by default the last one submitted into the output folder |
 | `--estimate` | print the price estimate and stop |
+| `--max-cost 0.50` | stop before the call when the estimate is above this many USD |
 | `--currency CZK` | also show prices in this currency (rate from the Czech National Bank) |
+
+`--currency` and `--max-cost` can also come from `NANO_BANANA_CURRENCY` and `NANO_BANANA_MAX_COST`, or from `~/.config/nano-banana/config.json` (`{"currency": "EUR", "max_cost": 1}`). The command line wins, then the environment, then the file.
+
+`finish.py` takes `--size WxH` (cover fit and crop, `--keep` picks the part that stays), `--format webp / avif / jpeg / png`, `--quality` and `--transparent [COLOR]`.
 
 </details>
 
 ## How it works
 
-The skill makes the agent work in a fixed order. It first asks what the image is for. If the picture has to show a real species, product or place, it gets two or three reference photos and asks you to confirm them. Then it writes the prompt in English and estimates the price, and it asks you first when the estimate is above about 0.50 USD or more than four images are wanted. After generating, it looks at the result and fixes small things with a follow-up instead of starting over.
+The skill makes the agent work in a fixed order. It first works out what the image is for, from your request and your project, and asks only about what is missing. If the picture has to show a real species, product or place, it gets two or three reference photos and asks you to confirm them. Then it writes the prompt in English and estimates the price. Above 0.50 USD the script itself refuses to run, and the agent raises the limit only after you agree; it also asks before more than four images. After generating, it looks at the result, fixes small things with a follow-up instead of starting over, and can crop and convert the image for the page it is meant for.
 
 The full workflow is in [`SKILL.md`](skills/nano-banana/SKILL.md). Prompt templates, edit templates and a list of common mistakes are in [`references/prompting.md`](skills/nano-banana/references/prompting.md).
 
 ## Models and prices
 
-Snapshot from 26 November 2026, USD per image.
+Snapshot from 28 November 2026, USD per image. Thinking and input tokens come on top, usually less than a cent per image.
 
 | Model | Best for | 1K | 2K | 4K |
 |---|---|---|---|---|
@@ -187,14 +204,16 @@ Snapshot from 26 November 2026, USD per image.
 | `pro` (`gemini-3-pro-image`) | the hardest prompts, a lot of text | 0.134 | 0.134 | 0.240 |
 | `lite` (`gemini-3.1-flash-lite-image`) | many simple images, 1K only, no search | 0.034 | n/a | n/a |
 
-Prices and model data live in [`models.json`](skills/nano-banana/scripts/models.json), the one file to edit when Google changes its [price list](https://ai.google.dev/gemini-api/docs/pricing). `--search` is billed on top: 5,000 grounded prompts per month are free, then 14 USD per 1,000 search queries.
+Prices and model data live in [`models.json`](skills/nano-banana/scripts/models.json), the one file the script reads when Google changes its [price list](https://ai.google.dev/gemini-api/docs/pricing); a test fails when the tables here and in `SKILL.md` no longer match it. `--search` is billed on top: 5,000 grounded prompts per month are free, then 14 USD per 1,000 search queries.
 
 ## Good to know
 
-- Google stores interactions so follow-ups work: 55 days on paid projects, 1 day on the free tier. Use `--no-store` for sensitive photos.
+- Google stores interactions so follow-ups work: 55 days on paid projects, 1 day on the free tier. Use `--no-store` for sensitive photos, or remove one afterwards with `--delete`.
 - Every generated image carries an invisible SynthID watermark.
 - The model invents details. When a picture has to match a real species, product or building, give it 2-3 reference photos with `-i`. The skill's workflow insists on that.
-- A request that times out may still have been billed, so the script never retries on its own.
+- After an error the script says whether a retry is safe. A rejected request (4xx, such as a wrong option, a missing key or a quota) was not billed. A server error or a timeout may have been, so it never retries on its own.
+- A generation takes roughly 10-30 seconds. An agent whose shell call times out loses an image it has paid for, so the skill tells it to allow enough time or run long jobs in the background.
+- `finish.py --transparent` removes one flat background color. Soft shadows and gradients stay, and the model's own transparent output is untested, so ask for a plain background and check the edges.
 - If you publish output made with `--search`, Google requires showing its search suggestions. The script saves them next to the image.
 
 ## FAQ
@@ -205,10 +224,13 @@ The CLI makes the call, and it does that well. This skill adds what sits around 
 | | Google `gemini-api` CLI and skills | nano-banana |
 |---|---|---|
 | Price estimate before, real cost after | no | yes |
-| The agent asks before expensive runs | no | yes |
+| Expensive runs stop until you raise the limit | no | yes (`--max-cost`) |
+| Says whether a failed call may have been billed | no | yes |
 | Options checked against the model | no, the API rejects them | yes |
 | Follow-up edits without copying IDs | manual | `--follow-up` |
 | Prompt and options saved next to each image | no | yes |
+| Batch results collectable in a later run | no | `--batch-result` |
+| Crop, convert and cut out for the web | no | `finish.py` |
 | Prompting guide and templates | no | yes |
 
 The CLI is a beta that moves quickly, so check both before you choose.
@@ -217,7 +239,7 @@ The CLI is a beta that moves quickly, so check both before you choose.
 The skill follows the open [Agent Skills](https://agentskills.io) format, so other agents that load `SKILL.md` files can use it. I have tested it in Claude Code only.
 
 **Prices changed. What do I edit?**
-`skills/nano-banana/scripts/models.json`, and the tables in `SKILL.md` and here.
+`skills/nano-banana/scripts/models.json`, and the tables in `SKILL.md`, here and in the translations. The tests tell you if one of them is left behind.
 
 **Why does it ask for reference photos?**
 Without one, the model fills in the details of a real thing from its imagination, and the result looks plausible and wrong.
@@ -226,7 +248,7 @@ Without one, the model fills in the details of a real thing from its imagination
 
 Issues and pull requests are welcome, especially when Google changes models, prices or the API. Update `models.json` and the tables in `SKILL.md` and this README together. The translations in `i18n/` were made with the help of AI, and corrections are welcome.
 
-The offline tests need no API key and no network:
+The offline tests need no API key and no network (the `finish.py` tests run when Pillow is installed and are skipped otherwise):
 
 ```bash
 python -m unittest discover -s tests
