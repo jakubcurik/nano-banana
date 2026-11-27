@@ -264,7 +264,7 @@ class RunTests(unittest.TestCase):
         self.assertIn("Total for this run:", out)
         self.assertIn("Done: 2 of 2 images saved.", out)
         self.assertIn("Image 1 of 2: the API answered in", out)
-        sidecar = next(self.dir.glob("*.txt")).read_text(encoding="utf-8")
+        sidecar = next(self.dir.glob("*-1.txt")).read_text(encoding="utf-8")
         self.assertRegex(sidecar, r"\| took \d+\.\d s \| cost 0\.0411 USD\n")
         self.assertEqual((self.dir / generate.LAST_ID_FILE).read_text(encoding="utf-8"), "v1_2")
 
