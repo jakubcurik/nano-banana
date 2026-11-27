@@ -9,18 +9,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/jakubcurik/nano-banana/tests.yml?branch=main&style=flat-square&label=tests&labelColor=0f1b2d&cacheSeconds=600"></a>
-  <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml"><img alt="Validate" src="https://img.shields.io/github/actions/workflow/status/jakubcurik/nano-banana/validate.yml?branch=main&style=flat-square&label=validate&labelColor=0f1b2d&cacheSeconds=600"></a>
-  <a href="https://github.com/jakubcurik/nano-banana/releases"><img alt="Release" src="https://img.shields.io/github/v/release/jakubcurik/nano-banana?style=flat-square&label=release&labelColor=0f1b2d&color=ffd54a&cacheSeconds=600"></a>
-  <a href="../LICENSE"><img alt="Licence MIT" src="https://img.shields.io/badge/license-MIT-ffd54a?style=flat-square&labelColor=0f1b2d"></a>
-  <a href="https://github.com/jakubcurik/nano-banana/stargazers"><img alt="Hvězdičky" src="https://img.shields.io/github/stars/jakubcurik/nano-banana?style=flat-square&labelColor=0f1b2d&color=ffd54a&cacheSeconds=600"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/jakubcurik/nano-banana/actions/workflows/tests.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml"><img alt="Validate" src="https://github.com/jakubcurik/nano-banana/actions/workflows/validate.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/releases"><img alt="Release" src="https://flat.badgen.net/github/release/jakubcurik/nano-banana?label=release&color=ffd54a&labelColor=0f1b2d"></a>
+  <a href="../LICENSE"><img alt="Licence MIT" src="https://img.shields.io/badge/license-MIT-ffd54a?labelColor=0f1b2d"></a>
+  <a href="https://github.com/jakubcurik/nano-banana/stargazers"><img alt="Hvězdičky" src="https://flat.badgen.net/github/stars/jakubcurik/nano-banana?label=stars&color=ffd54a&labelColor=0f1b2d"></a>
 </p>
 
 <p align="center">
-  <img alt="Plugin pro Claude Code" src="https://img.shields.io/badge/Claude_Code-plugin-ffd54a?style=flat-square&labelColor=0f1b2d">
-  <a href="https://agentskills.io"><img alt="Formát Agent Skills" src="https://img.shields.io/badge/Agent_Skills-compatible-ffd54a?style=flat-square&labelColor=0f1b2d"></a>
-  <img alt="Python 3.11 nebo novější" src="https://img.shields.io/badge/python-3.11%2B-ffd54a?style=flat-square&labelColor=0f1b2d">
-  <img alt="Gemini API" src="https://img.shields.io/badge/Gemini_API-Nano_Banana-ffd54a?style=flat-square&labelColor=0f1b2d">
+  <img alt="Plugin pro Claude Code" src="https://img.shields.io/badge/Claude_Code-plugin-ffd54a?labelColor=0f1b2d">
+  <a href="https://agentskills.io"><img alt="Formát Agent Skills" src="https://img.shields.io/badge/Agent_Skills-compatible-ffd54a?labelColor=0f1b2d"></a>
+  <img alt="Python 3.11 nebo novější" src="https://img.shields.io/badge/python-3.11%2B-ffd54a?labelColor=0f1b2d">
+  <img alt="Gemini API" src="https://img.shields.io/badge/Gemini_API-Nano_Banana-ffd54a?labelColor=0f1b2d">
 </p>
 
 <p align="center">
