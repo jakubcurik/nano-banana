@@ -478,6 +478,30 @@ class FileTests(unittest.TestCase):
         problems = generate.check(parse("x", "-i", str(big), "-i", str(big)), generate.MODELS["2.1"])
         self.assertTrue(any("MB" in p for p in problems), problems)
 
+    def test_delete_by_image_path(self):
+        image = self.dir / "secret.png"
+        image.write_bytes(b"x")
+        generate.save_sidecar(image, parse("edit"), "v1_secret", "v1_first")
+        (self.dir / generate.LAST_ID_FILE).write_text("v1_secret", encoding="utf-8")
+        client = fake_client()
+        with patch.object(generate, "make_client", return_value=client), \
+                patch.object(generate, "CONFIG_FILE", NO_CONFIG):
+            result, out, _ = run_main("--delete", str(image), "-o", str(self.dir))
+        self.assertEqual(result, 0)
+        self.assertEqual(client.interactions.deleted, ["v1_secret"])
+        self.assertIn("Deleted interaction v1_secret", out)
+        self.assertIn("--delete v1_first", out)  # the earlier step may hold the photo too
+        self.assertFalse((self.dir / generate.LAST_ID_FILE).exists())
+
+    def test_delete_failure_is_reported(self):
+        client = fake_client()
+        client.interactions.delete = lambda id: (_ for _ in ()).throw(StatusError(404))
+        err = io.StringIO()
+        with redirect_stdout(io.StringIO()), redirect_stderr(err):
+            code = generate.delete_interaction(client, "v1_gone", "v1_gone", self.dir)
+        self.assertEqual(code, 1)
+        self.assertIn("Could not delete interaction v1_gone", err.getvalue())
+
     def test_follow_up_by_image_path_reads_the_sidecar(self):
         image = self.dir / "pick.png"
         image.write_bytes(b"x")

@@ -480,6 +480,9 @@ def build_parser():
     ap.add_argument("--format", choices=IMAGE_FORMATS, help="output file format (default: what the model returns)")
     ap.add_argument("--no-store", action="store_true",
                     help="ask Google not to store the interaction (disables --follow-up on this result)")
+    ap.add_argument("--delete", metavar="IMAGE|ID",
+                    help="delete a stored interaction at Google (an image path, an interaction ID, or 'last'); "
+                         "generates nothing")
     ap.add_argument("--batch", action="store_true", help="half price, the result can take up to 24 h")
     ap.add_argument("--estimate", action="store_true", help="only print the price estimate, generate nothing")
     ap.add_argument("--max-cost", type=float, metavar="USD",
@@ -496,6 +499,9 @@ def main(argv=None):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
     a = apply_settings(build_parser().parse_args(argv))
+    if a.delete:
+        interaction_id = resolve_interaction(a.delete, Path(a.out))
+        sys.exit(delete_interaction(make_client(), interaction_id, a.delete, Path(a.out)))
     if a.prompt_file:
         a.prompt = Path(a.prompt_file).read_text(encoding="utf-8").strip()
     a.size = "512" if a.size.lower() in ("512", "0.5k") else a.size.upper()
@@ -526,9 +532,7 @@ def main(argv=None):
 
     out_dir = Path(a.out)
     previous_id = resolve_interaction(a.follow_up, out_dir) if a.follow_up else None
-    from google import genai
-
-    client = genai.Client(api_key=api_key())
+    client = make_client()
     prepare_out_dir(out_dir, a.out == DEFAULT_OUT)
     images = load_images(a.image)
 
@@ -542,6 +546,34 @@ def main(argv=None):
             sys.exit("No image was produced.")
         return
     sys.exit(run_interactions(client, a, model, images, previous_id, out_dir, fx, usd))
+
+
+def make_client():
+    from google import genai  # imported here so --estimate and the tests work without google-genai
+
+    return genai.Client(api_key=api_key())
+
+
+def delete_interaction(client, interaction_id, ref, out_dir):
+    """Delete a stored interaction at Google (for sensitive inputs) and return the exit code."""
+    try:
+        client.interactions.delete(id=interaction_id)
+    except Exception as exc:
+        print(f"Could not delete interaction {interaction_id}: {describe(exc)}", file=sys.stderr)
+        return 1
+    print(f"Deleted interaction {interaction_id}. Google no longer stores it, so --follow-up on it is no "
+          "longer possible. The image files on disk are untouched.")
+    last_id_file = Path(out_dir) / LAST_ID_FILE
+    if last_id_file.is_file() and last_id_file.read_text(encoding="utf-8").strip() == interaction_id:
+        last_id_file.unlink()
+    path = Path(ref)
+    if path.with_suffix(".txt").is_file():
+        header = path.with_suffix(".txt").read_text(encoding="utf-8").partition("\n")[0]
+        earlier = re.search(r"\| follows (\S+)", header)
+        if earlier:
+            print(f"This image continued interaction {earlier.group(1)}, which Google still stores. Delete it "
+                  f"too (--delete {earlier.group(1)}) if the sensitive input was sent there.")
+    return 0
 
 
 def describe(exc):
