@@ -72,6 +72,45 @@ class ManifestTests(unittest.TestCase):
         self.assertTrue((ROOT / ".claude-plugin" / "icon.png").is_file())
 
 
+def numbers(cell):
+    """Prices written in a table cell, as floats ("0,034" and "0.034" both count; "n/a" gives none)."""
+    return [float(n.replace(",", ".")) for n in re.findall(r"\d+[.,]\d+", cell)]
+
+
+class PriceDocTests(unittest.TestCase):
+    """Prices live in models.json and are repeated in SKILL.md and every README; they must agree."""
+
+    def setUp(self):
+        catalog = json.loads((SKILL_DIR / "scripts" / "models.json").read_text(encoding="utf-8"))
+        self.models = catalog["models"]
+
+    def expected(self, key, sizes=("1K", "2K", "4K")):
+        return [round(self.models[key]["sizes"][s]["price"], 3) for s in sizes if s in self.models[key]["sizes"]]
+
+    def test_skill_md_model_table(self):
+        text = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
+        for key, model in self.models.items():
+            row = re.search(rf"^\| \*\*{re.escape(key)}\*\* \|.*\| ([^|]+) \|$", text, re.M)
+            self.assertIsNotNone(row, f"SKILL.md has no table row for model {key}")
+            found = numbers(row.group(1))
+            expected = self.expected(key)
+            if "512" in model["sizes"]:
+                expected.append(round(model["sizes"]["512"]["price"], 3))
+            self.assertEqual(found, expected, f"SKILL.md prices for model {key}")
+
+    def test_readme_tables(self):
+        for readme in [ROOT / "README.md", *sorted((ROOT / "i18n").glob("README.*.md"))]:
+            text = readme.read_text(encoding="utf-8")
+            for key, model in self.models.items():
+                row = re.search(rf"^\| `{re.escape(key)}` \(`{re.escape(model['id'])}`\) \|.*$", text, re.M)
+                self.assertIsNotNone(row, f"{readme.name} has no table row for model {key}")
+                cells = [c.strip() for c in row.group(0).strip("|").split("|")][-3:]
+                found = [numbers(c)[0] if numbers(c) else None for c in cells]
+                expected = [round(model["sizes"][s]["price"], 3) if s in model["sizes"] else None
+                            for s in ("1K", "2K", "4K")]
+                self.assertEqual(found, expected, f"{readme.name} prices for model {key}")
+
+
 class ReadmeTests(unittest.TestCase):
     def test_relative_links_and_images_exist(self):
         for readme in [ROOT / "README.md", *sorted((ROOT / "i18n").glob("README.*.md"))]:
