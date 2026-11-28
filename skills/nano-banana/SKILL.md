@@ -34,7 +34,7 @@ uv run --script <skill-dir>/scripts/generate.py "English prompt" [options]
 |---|---|
 | `-m 2.1 / 2 / pro / lite` | model, default `2.1` |
 | `-s 512 / 1K / 2K / 4K` | resolution, default `1K` (512 only on model `2`) |
-| `-a 16:9` | aspect ratio: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9; also 1:4, 4:1, 1:8, 8:1 on models 2.1 and 2 |
+| `-a 16:9` | aspect ratio: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9; also 1:4, 4:1, 1:8, 8:1 on models 2.1 and 2. Without it, edits keep the input's shape and the model picks one for new images (16:9 in tests), so always pass it |
 | `-i photo.jpg` | input image for editing or as a reference, repeatable (max 14, together at most about 14 MB) |
 | `-t minimal / medium / high` | thinking level (2.1: all three, default medium; 2 and lite: minimal/high; Pro: not configurable) |
 | `--search` | Google Search grounding incl. image search (2.1, 2, Pro; not lite) |
@@ -42,7 +42,7 @@ uv run --script <skill-dir>/scripts/generate.py "English prompt" [options]
 | `-n 4` | number of images, each one is billed |
 | `-o folder` | output folder, default `.cache/nano-banana` in the current directory (created with a `.gitignore` that ignores it) |
 | `--name hero` | file-name stem instead of the start of the prompt |
-| `--format png / jpeg` | output file format (jpeg is much smaller) |
+| `--format png / jpeg` | output file format. Models 2.1, 2 and lite return only JPEG (also without the option); the script refuses `png` for them. Convert with `finish.py` instead |
 | `--prompt-file file` | read the prompt from a file instead of the command line |
 | `--no-store` | ask Google not to keep the interaction (then `--follow-up` is impossible) |
 | `--delete IMAGE or ID` | delete a stored interaction at Google (sensitive photos); generates nothing |
@@ -53,7 +53,7 @@ uv run --script <skill-dir>/scripts/generate.py "English prompt" [options]
 | `--max-cost 0.50` | stop before the API call when the estimate is above this many USD (default 0.50) |
 | `--currency CZK` | also show prices in another currency (rate from the Czech National Bank) |
 
-The script checks that the model supports the requested combination before it calls the API. For every call it prints how long the API took, the path of each image as soon as it is saved, and the real cost from the reported tokens: image output, thinking and input (thinking usually adds most of a cent per image). Next to every image it saves a `.txt` file with the prompt, the options, the interaction ID, the duration and the cost. If a call of an `-n` run fails, the images saved before it stay, the run stops, and a summary lists what was saved and what failed (exit code 1).
+The script checks that the model supports the requested combination before it calls the API. For every call it prints how long the API took, the path of each image as soon as it is saved, and the real cost from the reported tokens: image output, thinking and input (on 2.1 at 1K, thinking and the short text answer added 0.3-0.9 US cents per image in tests). Next to every image it saves a `.txt` file with the prompt, the options, the interaction ID, the duration and the cost. If a call of an `-n` run fails, the images saved before it stay, the run stops, and a summary lists what was saved and what failed (exit code 1).
 
 Defaults for `--currency` and `--max-cost` can come from the environment (`NANO_BANANA_CURRENCY`, `NANO_BANANA_MAX_COST`) or from `~/.config/nano-banana/config.json` (`{"currency": "CZK", "max_cost": 0.5}`). The command line wins over the environment, the environment over the file.
 
@@ -72,7 +72,7 @@ All models take at most 14 input images in total. Prices are a snapshot from 28 
 
 ## Time limits of your shell
 
-One image usually takes 10-30 seconds, but Google publishes no latency figures and a slow call can take longer. Measured on 26-27 Nov 2026 as the time between consecutive images of `-n` runs: model 2.1 at 1K 12-30 s per image (the longer ones with `-t high`), at 2K 21-25 s; Pro 16 s at 1K and 21-23 s at 2K. 4K was not measured. The script prints the real duration of every call and stores it in the `.txt` file; use those numbers once you have them.
+Google publishes no latency figures. Measured by the script on 28 Nov 2026 with model 2.1 at 1K and the default thinking level: 11.5-17.9 s per call over seven calls, a follow-up edit included. One lite batch job with a single image took 2.6 minutes from submission to the end. Other models and sizes have no measurements here, and a slow call can take longer. The script prints the duration of every call and stores it in the `.txt` file; use those numbers as they accumulate.
 
 A shell call killed by its timeout loses the image, and the image may still be billed. So:
 
@@ -118,7 +118,7 @@ uv run --script <skill-dir>/scripts/finish.py hero.png --size 1200x630 --format 
 
 - `--size WxH` scales and crops to exactly that size (cover fit); `--keep top / left / bottom-right ...` chooses the part that stays (default center). `--size 1200x` only scales.
 - `--format webp` (or `avif`, `jpeg`, `png`) with `--quality 82` by default. WebP is the usual choice for photos and illustrations; PNG for flat graphics that need sharp edges.
-- **Transparency.** Google's documentation says nothing about transparent output. A live check was planned for this version but could not run (the test account had no credit), so assume the model returns no alpha channel even when the prompt asks for one. Ask for a single flat background color that does not appear in the subject ("on a plain, solid light grey background, no shadow"), then run `finish.py logo.png --transparent` (color from the corners) or `--transparent "#d8d8d6"`. It removes only background connected to the image border, so the same color inside the subject stays. It is a color key, not a matting model: soft shadows, gradients, glows and hair stay or leave a fringe. On a generated sticker with a slight drop shadow, the flat grey vanished cleanly but the shadow remained as a grey rim. Open the result on a dark background and check the edges.
+- **Transparency.** The model cannot return a transparent image. Models 2.1, 2 and lite deliver only JPEG, which has no alpha channel, and the API rejects a request for PNG (checked 28 Nov 2026). Asked for "a fully transparent background with an alpha channel", 2.1 painted a grey-and-white checkerboard into an ordinary RGB JPEG, with stray smudges in it. Never ask for transparency in the prompt. Ask for a single flat background color that does not appear in the subject ("on a plain, solid light grey background, no shadow"), then run `finish.py logo.png --transparent` (color from the corners) or `--transparent "#d8d8d6"`. It removes only background connected to the image border, so the same color inside the subject stays. It is a color key, not a matting model: soft shadows, gradients, glows and hair stay or leave a fringe. In tests, a banana icon generated "on a plain, solid light grey background with no shadow" came out clean (96% of the pixels removed, no visible rim); on a sticker with a slight drop shadow the shadow remained as a grey rim. Open the result on a dark background and check the edges.
 - `finish.py` writes next to the input (`hero-1200x630.webp`) or to `-o`, never over the input or into this skill's folder.
 
 ## API key

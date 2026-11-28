@@ -150,7 +150,7 @@ Describe the detail that must not change as precisely as you can.
 | "cinematic / studio lighting" for a real-life photo | One concrete light source with a direction. |
 | Concluding "format A is better" from one image | At least 3-4 images per variant (`-n`), otherwise you compare chance. |
 | Same prompt again in 4K or portrait, expecting the same image | A new generation gives a different image. Follow up on the finished one (`--follow-up` with `-s` / `-a`). |
-| "1200x630 pixels" or "transparent background" in the prompt | Generate the nearest aspect ratio on a flat background, then `finish.py --size 1200x630` / `--transparent`. |
+| "1200x630 pixels" or "transparent background" in the prompt | Generate the nearest aspect ratio on a flat background, then `finish.py --size 1200x630` / `--transparent`. Asked for transparency, the model paints a fake checkerboard into a JPEG. |
 | A series where every image is prompted from text alone | Pass the best earlier image with `-i` as the reference for character or style. |
 
 ## 5. JSON prompts
