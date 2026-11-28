@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.1] - 2026-11-28
+
+### Fixed
+
+- The real cost counts all output tokens. Real responses list only the image tokens per modality while the total output is a few hundred tokens higher (the model's short text answer among them); those are now billed at the text rate.
+- `--format png` is refused before the call on models 2.1, 2 and lite, whose API accepts only JPEG. `models.json` records the accepted formats per model.
+- A follow-up on a deleted or expired interaction explains what happened and suggests `-i` instead.
+- The help no longer claims that new images default to 1:1; without `-a` the model picks the shape (16:9 in tests).
+
+### Changed
+
+- Documentation from live checks: measured call durations, what happens when you ask for transparency (the model paints a checkerboard into a JPEG), the output format, and a new terminal screenshot from a 1.1 run.
+
 ## [1.1.0] - 2026-11-28
 
 ### Added
@@ -43,5 +56,6 @@ First release.
 - Follow-up edits, batch (half price), Google Search grounding, `--no-store`, JPEG or PNG output.
 - A workflow for the agent and a prompting guide with templates.
 
+[1.1.1]: https://github.com/jakubcurik/nano-banana/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/jakubcurik/nano-banana/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/jakubcurik/nano-banana/releases/tag/v1.0.0

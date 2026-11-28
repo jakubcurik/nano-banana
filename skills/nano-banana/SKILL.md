@@ -15,7 +15,7 @@ license: MIT
 compatibility: Needs uv (https://docs.astral.sh/uv/) or Python 3.11+ with google-genai (and Pillow for finish.py), network access, and a Gemini API key with billing enabled (image models have no free tier).
 metadata:
   author: jakubcurik
-  version: "1.1.0"
+  version: "1.1.1"
 ---
 
 # Gemini image generation (Nano Banana)

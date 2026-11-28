@@ -1,7 +1,7 @@
 {
   "name": "nano-banana",
   "description": "Generate and edit images with Google's Nano Banana models (Gemini API): price estimate before every call, real cost after, a tested workflow and a prompting guide.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": {
     "name": "jakubcurik"
   },
