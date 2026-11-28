@@ -182,6 +182,12 @@ class CostTests(unittest.TestCase):
                                                                            token_count=1120)])
         self.assertEqual(generate.token_counts(usage), {"input": 20, "image": 1120, "text": 0, "thinking": 300})
 
+    def test_counts_output_missing_from_the_modality_list(self):
+        # Shape of a real 2.1 response (28 Nov 2026): only image tokens are listed per modality.
+        usage = SimpleNamespace(total_input_tokens=15, output_tokens_by_modality=[
+            SimpleNamespace(modality="image", tokens=1120)], total_output_tokens=1385, total_thought_tokens=642)
+        self.assertEqual(generate.token_counts(usage), {"input": 15, "image": 1120, "text": 265, "thinking": 642})
+
     def test_counts_without_modality_breakdown(self):
         usage = SimpleNamespace(total_input_tokens=10, output_tokens_by_modality=None,
                                 total_output_tokens=1200, total_thought_tokens=None)

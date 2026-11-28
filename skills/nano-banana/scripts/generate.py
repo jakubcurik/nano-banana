@@ -376,7 +376,10 @@ def token_counts(usage):
         input_tokens = getattr(usage, "prompt_token_count", None) or 0
         thinking = getattr(usage, "thoughts_token_count", None) or 0
     image = modality_tokens(by_modality, True)
-    text = modality_tokens(by_modality, False) if by_modality else max(total_output - image, 0)
+    # Real responses list only the image tokens per modality, while the total output is a few hundred
+    # tokens higher (the model's text answer among them). Those are billed as output too, so everything
+    # beyond the image tokens counts at the text rate.
+    text = max(total_output - image, modality_tokens(by_modality, False))
     return {"input": input_tokens, "image": image, "text": text, "thinking": thinking}
 
 
