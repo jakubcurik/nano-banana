@@ -59,10 +59,10 @@ This skill prints the estimated price before each call and the real cost after i
 ## See it work
 
 <p align="center">
-  <img src="assets/terminal.png" width="880" alt="Terminal output of one generation: the model, an estimated cost of 0.0504 USD, the interaction ID, the usage of 1680 image tokens for 0.0504 USD, and the saved file path.">
+  <img src="assets/terminal.png" width="880" alt="Terminal output of one generation: the model, an estimated cost of 0.0336 USD, the API answering in 17.9 seconds, the saved file path, the model's short reply, the interaction ID, and a real cost of 0.0426 USD split into image, thinking, text and input tokens.">
 </p>
 
-That is a real run of version 1.0. A 2K image on the default model costs about five US cents, and you see the number before the call and again after it. Since 1.1 the cost after the call also counts the thinking and input tokens, so it comes out slightly above the estimate, and the output shows how long the call took.
+That is a real run. The image itself is estimated at 0.0336 USD for 1K on the default model. The real cost after the call adds the thinking, the model's short text answer and the prompt, 0.0426 USD here, and the output shows that the call took 18 seconds.
 
 ## Gallery
 
@@ -170,7 +170,7 @@ A batch job waits at most 8 minutes (`--wait`), then the script exits and tells 
 | `-n 4` | number of images, each billed separately |
 | `-o folder` | output folder |
 | `--name hero` | file-name stem instead of the start of the prompt |
-| `--format png / jpeg` | output file format |
+| `--format png / jpeg` | output file format; 2.1, 2 and lite return only JPEG, so `png` is refused there |
 | `--prompt-file file` | read the prompt from a file |
 | `--no-store` | ask Google not to keep the interaction (this disables follow-ups on it) |
 | `--delete IMAGE or ID` | delete a stored interaction at Google |
@@ -212,8 +212,8 @@ Prices and model data live in [`models.json`](skills/nano-banana/scripts/models.
 - Every generated image carries an invisible SynthID watermark.
 - The model invents details. When a picture has to match a real species, product or building, give it 2-3 reference photos with `-i`. The skill's workflow insists on that.
 - After an error the script says whether a retry is safe. A rejected request (4xx, such as a wrong option, a missing key or a quota) was not billed. A server error or a timeout may have been, so it never retries on its own.
-- A generation takes roughly 10-30 seconds. An agent whose shell call times out loses an image it has paid for, so the skill tells it to allow enough time or run long jobs in the background.
-- `finish.py --transparent` removes one flat background color. Soft shadows and gradients stay, and the model's own transparent output is untested, so ask for a plain background and check the edges.
+- In the live checks for 1.1, one 1K image on model 2.1 took 11.5-17.9 seconds. An agent whose shell call times out loses an image it has paid for, so the skill tells it to allow enough time or run long jobs in the background.
+- The model cannot return a transparent image: it delivers JPEG, and when asked for transparency it paints a fake checkerboard. Ask for a plain background and cut it out with `finish.py --transparent`, which removes one flat color; soft shadows and gradients stay.
 - If you publish output made with `--search`, Google requires showing its search suggestions. The script saves them next to the image.
 
 ## FAQ

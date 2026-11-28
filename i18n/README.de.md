@@ -59,10 +59,10 @@ Dieser Skill gibt vor jedem Aufruf den geschätzten Preis aus und danach die tat
 ## So sieht es aus
 
 <p align="center">
-  <img src="../assets/terminal.png" width="880" alt="Terminal-Ausgabe einer Generierung: das Modell, geschätzte Kosten von 0,0504 USD, die Interaktions-ID, der Verbrauch von 1680 Bild-Tokens für 0,0504 USD und der Pfad der gespeicherten Datei.">
+  <img src="../assets/terminal.png" width="880" alt="Terminal-Ausgabe einer Generierung: das Modell, geschätzte Kosten von 0,0336 USD, die Antwort der API nach 17,9 Sekunden, der Pfad der gespeicherten Datei, die kurze Antwort des Modells, die Interaktions-ID und tatsächliche Kosten von 0,0426 USD, aufgeteilt in Bild-, Thinking-, Text- und Eingabe-Tokens.">
 </p>
 
-Das ist ein echter Lauf mit Version 1.0. Ein 2K-Bild mit dem Standardmodell kostet etwa fünf US-Cent, und du siehst die Zahl vor dem Aufruf und noch einmal danach. Seit 1.1 zählen die Kosten nach dem Aufruf auch die Thinking- und Eingabe-Tokens mit, liegen also etwas über der Schätzung, und die Ausgabe zeigt, wie lange der Aufruf gedauert hat.
+Das ist ein echter Lauf. Das Bild selbst ist bei 1K mit dem Standardmodell auf 0,0336 USD geschätzt. Die tatsächlichen Kosten nach dem Aufruf rechnen Thinking, die kurze Textantwort des Modells und den Prompt dazu, hier 0,0426 USD, und die Ausgabe zeigt, dass der Aufruf 18 Sekunden gedauert hat.
 
 <a id="gallery"></a>
 
@@ -176,7 +176,7 @@ Ein Batch-Job wartet höchstens 8 Minuten (`--wait`), dann beendet sich das Skri
 | `-n 4` | Anzahl der Bilder, jedes wird einzeln berechnet |
 | `-o Ordner` | Ausgabeordner |
 | `--name hero` | Anfang des Dateinamens statt des Prompt-Anfangs |
-| `--format png / jpeg` | Format der Ausgabedatei |
+| `--format png / jpeg` | Dateiformat; 2.1, 2 und lite liefern nur JPEG, deshalb wird `png` dort abgelehnt |
 | `--prompt-file Datei` | liest den Prompt aus einer Datei |
 | `--no-store` | Google bitten, die Interaktion nicht zu speichern (daran lässt sich dann nicht anknüpfen) |
 | `--delete IMAGE or ID` | eine gespeicherte Interaktion bei Google löschen |
@@ -222,8 +222,8 @@ Preise und Modelldaten stehen in [`models.json`](../skills/nano-banana/scripts/m
 - Jedes generierte Bild trägt ein unsichtbares SynthID-Wasserzeichen.
 - Das Modell erfindet Details. Wenn ein Bild zu einer echten Art, einem echten Produkt oder Gebäude passen muss, gib ihm per `-i` 2-3 Referenzfotos. Der Ablauf des Skills besteht darauf.
 - Nach einem Fehler sagt das Skript, ob ein neuer Versuch sicher ist. Eine abgelehnte Anfrage (4xx, etwa eine falsche Option, ein fehlender Key oder ein Kontingent) wurde nicht berechnet. Ein Serverfehler oder ein Timeout kann berechnet worden sein, deshalb wiederholt das Skript nie von selbst.
-- Eine Generierung dauert grob 10-30 Sekunden. Ein Agent, dessen Shell-Aufruf ins Timeout läuft, verliert ein bereits bezahltes Bild, deshalb sagt ihm der Skill, genug Zeit einzuplanen oder lange Jobs im Hintergrund laufen zu lassen.
-- `finish.py --transparent` entfernt eine flache Hintergrundfarbe. Weiche Schatten und Verläufe bleiben, und eine transparente Ausgabe des Modells selbst ist ungetestet; bitte also um einen schlichten Hintergrund und prüfe die Kanten.
+- In den Live-Tests für 1.1 dauerte ein 1K-Bild mit Modell 2.1 11,5-17,9 Sekunden. Ein Agent, dessen Shell-Aufruf ins Timeout läuft, verliert ein bereits bezahltes Bild, deshalb sagt ihm der Skill, genug Zeit einzuplanen oder lange Jobs im Hintergrund laufen zu lassen.
+- Das Modell kann kein transparentes Bild liefern: Es gibt JPEG aus, und bittet man um Transparenz, malt es ein falsches Schachbrettmuster. Bitte um einen schlichten Hintergrund und stelle mit `finish.py --transparent` frei, das eine flache Farbe entfernt; weiche Schatten und Verläufe bleiben.
 - Wenn du Ergebnisse veröffentlichst, die mit `--search` entstanden sind, verlangt Google, dass du seine Suchvorschläge anzeigst. Das Skript speichert sie neben dem Bild.
 
 <a id="faq"></a>

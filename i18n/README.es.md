@@ -59,10 +59,10 @@ Este skill muestra el precio estimado antes de cada llamada y el coste real desp
 ## Míralo en acción
 
 <p align="center">
-  <img src="../assets/terminal.png" width="880" alt="Salida de la terminal en una generación: el modelo, un coste estimado de 0,0504 USD, el ID de la interacción, el uso de 1680 tokens de imagen por 0,0504 USD y la ruta del archivo guardado.">
+  <img src="../assets/terminal.png" width="880" alt="Salida de la terminal en una generación: el modelo, un coste estimado de 0,0336 USD, la respuesta de la API en 17,9 segundos, la ruta del archivo guardado, la breve respuesta del modelo, el ID de la interacción y un coste real de 0,0426 USD desglosado en tokens de imagen, razonamiento, texto y entrada.">
 </p>
 
-Es una ejecución real de la versión 1.0. Una imagen en 2K con el modelo predeterminado cuesta unos cinco centavos de dólar, y ves la cifra antes de la llamada y otra vez después. Desde la 1.1, el coste tras la llamada incluye también los tokens de razonamiento y de entrada, así que sale algo por encima de la estimación, y la salida muestra cuánto tardó la llamada.
+Es una ejecución real. La imagen en sí, en 1K con el modelo predeterminado, se estima en 0,0336 USD. El coste real tras la llamada suma el razonamiento, la breve respuesta de texto del modelo y el prompt, aquí 0,0426 USD, y la salida muestra que la llamada tardó 18 segundos.
 
 <a id="gallery"></a>
 
@@ -176,7 +176,7 @@ Un trabajo por lotes espera como mucho 8 minutos (`--wait`); después el script 
 | `-n 4` | número de imágenes, cada una se cobra por separado |
 | `-o folder` | carpeta de salida |
 | `--name hero` | inicio del nombre de archivo en lugar del comienzo del prompt |
-| `--format png / jpeg` | formato del archivo de salida |
+| `--format png / jpeg` | formato del archivo; 2.1, 2 y lite solo devuelven JPEG, así que ahí se rechaza `png` |
 | `--prompt-file file` | leer el prompt desde un archivo |
 | `--no-store` | pedir a Google que no guarde la interacción (así no se puede continuar sobre ella) |
 | `--delete IMAGE or ID` | borrar una interacción guardada en Google |
@@ -222,8 +222,8 @@ Los precios y los datos de los modelos están en [`models.json`](../skills/nano-
 - Cada imagen generada lleva una marca de agua invisible SynthID.
 - El modelo se inventa detalles. Cuando una imagen tiene que coincidir con una especie, un producto o un edificio reales, dale 2-3 fotos de referencia con `-i`. El flujo del skill insiste en eso.
 - Tras un error, el script dice si es seguro volver a intentarlo. Una petición rechazada (4xx, como una opción incorrecta, una clave que falta o una cuota agotada) no se cobró. Un error del servidor o un tiempo de espera agotado sí pueden haberse cobrado, por eso el script nunca reintenta por su cuenta.
-- Una generación tarda unos 10-30 segundos. Un agente cuya llamada a la shell agota su tiempo pierde una imagen ya pagada, por eso el skill le indica que deje tiempo suficiente o que ejecute los trabajos largos en segundo plano.
-- `finish.py --transparent` elimina un color de fondo plano. Las sombras suaves y los degradados se quedan, y la salida transparente del propio modelo no está probada, así que pide un fondo liso y revisa los bordes.
+- En las pruebas reales de la 1.1, una imagen 1K con el modelo 2.1 tardó 11,5-17,9 segundos. Un agente cuya llamada a la shell agota su tiempo pierde una imagen ya pagada, por eso el skill le indica que deje tiempo suficiente o que ejecute los trabajos largos en segundo plano.
+- El modelo no puede devolver una imagen transparente: entrega JPEG y, si le pides transparencia, pinta un falso tablero de ajedrez. Pide un fondo liso y recórtalo con `finish.py --transparent`, que elimina un color plano; las sombras suaves y los degradados se quedan.
 - Si publicas un resultado hecho con `--search`, Google exige mostrar sus sugerencias de búsqueda. El script las guarda junto a la imagen.
 
 <a id="faq"></a>

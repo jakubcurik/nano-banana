@@ -59,10 +59,10 @@ Tenhle skill před každým voláním vypíše odhad ceny a po něm skutečnou c
 ## Ukázka
 
 <p align="center">
-  <img src="../assets/terminal.png" width="880" alt="Výstup terminálu při jednom generování: model, odhad ceny 0,0504 USD, ID interakce, spotřeba 1680 obrazových tokenů za 0,0504 USD a cesta k uloženému souboru.">
+  <img src="../assets/terminal.png" width="880" alt="Výstup terminálu při jednom generování: model, odhad ceny 0,0336 USD, odpověď API za 17,9 sekundy, cesta k uloženému souboru, krátká odpověď modelu, ID interakce a skutečná cena 0,0426 USD rozepsaná na tokeny obrázku, přemýšlení, textu a vstupu.">
 </p>
 
-Je to skutečný běh verze 1.0. Obrázek ve 2K na výchozím modelu stojí asi pět amerických centů a číslo vidíš před voláním i po něm. Od verze 1.1 započítává cena po volání i tokeny za přemýšlení a vstup, takže vychází o něco výš než odhad, a výstup ukazuje, jak dlouho volání trvalo.
+Je to skutečný běh. Samotný obrázek 1K na výchozím modelu má odhad 0,0336 USD. Skutečná cena po volání k tomu přičte přemýšlení, krátkou textovou odpověď modelu a prompt, tady celkem 0,0426 USD, a výstup ukazuje, že volání trvalo 18 sekund.
 
 ## Galerie
 
@@ -170,7 +170,7 @@ Dávková úloha čeká nejvýš 8 minut (`--wait`), pak skript skončí a napí
 | `-n 4` | počet obrázků, každý se platí zvlášť |
 | `-o složka` | výstupní složka |
 | `--name hero` | začátek názvu souboru místo začátku promptu |
-| `--format png / jpeg` | formát výstupního souboru |
+| `--format png / jpeg` | formát souboru; 2.1, 2 a lite vracejí jen JPEG, takže `png` u nich skript odmítne |
 | `--prompt-file soubor` | načte prompt ze souboru |
 | `--no-store` | požádá Google, aby interakci neukládal (na ni pak nejde navázat) |
 | `--delete IMAGE or ID` | smaže uloženou interakci u Googlu |
@@ -212,8 +212,8 @@ Ceny a údaje o modelech jsou v [`models.json`](../skills/nano-banana/scripts/mo
 - Každý vygenerovaný obrázek nese neviditelný vodoznak SynthID.
 - Model si vymýšlí detaily. Když má obrázek odpovídat skutečnému druhu, produktu nebo budově, dej mu přes `-i` 2-3 referenční fotky. Postup skillu na tom trvá.
 - Po chybě skript řekne, jestli je bezpečné to zkusit znovu. Odmítnutý požadavek (4xx, třeba špatná volba, chybějící klíč nebo vyčerpaná kvóta) se neúčtoval. Chyba serveru nebo vypršení času se zaúčtovat mohly, proto skript nikdy neopakuje sám od sebe.
-- Generování trvá zhruba 10-30 sekund. Agent, kterému vyprší časový limit příkazu, přijde o obrázek, který už zaplatil, proto mu skill říká, ať nechá dost času nebo dlouhé úlohy pustí na pozadí.
-- `finish.py --transparent` odstraní jednu plochou barvu pozadí. Měkké stíny a přechody zůstanou a průhledný výstup samotného modelu není otestovaný, takže si řekni o čisté pozadí a zkontroluj okraje.
+- Při živém ověření verze 1.1 trval jeden obrázek 1K na modelu 2.1 11,5-17,9 sekundy. Agent, kterému vyprší časový limit příkazu, přijde o obrázek, který už zaplatil, proto mu skill říká, ať nechá dost času nebo dlouhé úlohy pustí na pozadí.
+- Model neumí vrátit průhledný obrázek: dodává JPEG a když o průhlednost požádáš, namaluje falešnou šachovnici. Řekni si o čisté pozadí a odstraň ho přes `finish.py --transparent`, který smaže jednu plochou barvu; měkké stíny a přechody zůstanou.
 - Pokud zveřejníš výstup vytvořený přes `--search`, Google vyžaduje zobrazit návrhy vyhledávání. Skript je ukládá vedle obrázku.
 
 ## Časté otázky
