@@ -64,6 +64,14 @@ class CheckTests(unittest.TestCase):
         self.assertTrue(self.problems("x", "--batch", "--format", "jpeg"))
         self.assertTrue(self.problems("x", "-m", "pro", "--batch"))  # no verified batch price
 
+    def test_png_refused_where_the_api_only_returns_jpeg(self):
+        # A live check on 28 Nov 2026: 2.1, 2 and lite answer --format png with HTTP 400.
+        for model in ("2.1", "2", "lite"):
+            problems = self.problems("x", "-m", model, "--format", "png")
+            self.assertTrue(any("finish.py" in p for p in problems), model)
+            self.assertEqual(self.problems("x", "-m", model, "--format", "jpeg"), [], model)
+        self.assertEqual(self.problems("x", "-m", "pro", "--format", "png"), [])  # not checked live, still allowed
+
     def test_no_store_and_follow_up_conflict(self):
         self.assertTrue(self.problems("x", "--no-store", "--follow-up"))
 

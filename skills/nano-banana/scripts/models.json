@@ -5,6 +5,7 @@
     "price/batch are USD per generated image, standard and batch (null = no batch price published or verified).",
     "per_million_* are USD per 1M tokens: image output, text and thinking output, and input (text and images). They turn the usage the API reports into the real cost after a call.",
     "batch_factor scales the token rates for batch jobs (Google's batch prices are half the standard ones).",
+    "output_formats lists the formats the API accepted for response_format.mime_type in a live check (28 Nov 2026); a model without it was not checked.",
     "Prices and model lists change. Update this file, not the script, and the price tables in SKILL.md and the READMEs (a test checks they agree)."
   ],
   "search_pricing": "5,000 grounded prompts per month are free, then 14 USD per 1,000 search queries.",
@@ -25,6 +26,7 @@
       "thinking": ["minimal", "medium", "high"],
       "search": true,
       "extreme_aspect_ratios": true,
+      "output_formats": ["jpeg"],
       "max_input_images": 14
     },
     "2": {
@@ -43,6 +45,7 @@
       "thinking": ["minimal", "high"],
       "search": true,
       "extreme_aspect_ratios": true,
+      "output_formats": ["jpeg"],
       "max_input_images": 14
     },
     "pro": {
@@ -75,6 +78,7 @@
       "thinking": ["minimal", "high"],
       "search": false,
       "extreme_aspect_ratios": false,
+      "output_formats": ["jpeg"],
       "max_input_images": 14
     }
   }

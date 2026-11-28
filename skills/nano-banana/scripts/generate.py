@@ -139,6 +139,9 @@ def check(a, model):
     if a.thinking and a.thinking not in model["thinking"]:
         options = ", ".join(model["thinking"]) or "none (this model always thinks)"
         errors.append(f"Model {a.model} does not support thinking level {a.thinking}. Options: {options}.")
+    if a.format and a.format not in model.get("output_formats", IMAGE_FORMATS):
+        errors.append(f"Model {a.model} only returns {', '.join(model['output_formats'])} (the API rejects "
+                      f"--format {a.format}). Convert afterwards instead, e.g. scripts/finish.py IMAGE --format png.")
     if a.search and not model["search"]:
         errors.append(f"Model {a.model} does not support Google Search grounding.")
     if len(a.image) > model["max_input_images"]:
@@ -650,7 +653,9 @@ def build_parser():
     ap.add_argument("-o", "--out", default=DEFAULT_OUT,
                     help=f"output folder (default {DEFAULT_OUT}, which gets a .gitignore that ignores it)")
     ap.add_argument("--name", help="file-name stem for the images (default: the start of the prompt)")
-    ap.add_argument("--format", choices=IMAGE_FORMATS, help="output file format (default: what the model returns)")
+    ap.add_argument("--format", choices=IMAGE_FORMATS,
+                    help="output file format; models 2.1, 2 and lite return only jpeg (their default), so png "
+                         "is refused there; convert with finish.py instead")
     ap.add_argument("--no-store", action="store_true",
                     help="ask Google not to store the interaction (disables --follow-up on this result)")
     ap.add_argument("--delete", metavar="IMAGE|ID",
