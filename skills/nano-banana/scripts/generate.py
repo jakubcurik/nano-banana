@@ -306,7 +306,7 @@ def interact(client, a, model, images, previous_id):
     content = [{"type": "text", "text": a.prompt}]
     content += [{"type": "image", "data": data, "mime_type": mime} for data, mime in images]
     response_format = {"type": "image", "image_size": a.size}
-    if a.aspect:  # without it, edits keep the input photo's shape and new images are square
+    if a.aspect:  # without it, edits keep the input photo's shape and the model picks the shape of new images
         response_format["aspect_ratio"] = a.aspect
     if a.format:
         response_format["mime_type"] = IMAGE_FORMATS[a.format]
@@ -640,7 +640,7 @@ def build_parser():
     ap.add_argument("-m", "--model", choices=MODELS, default="2.1", help="2.1 (default), 2, pro, lite")
     ap.add_argument("-s", "--size", default="1K", help="512, 1K, 2K, 4K (depends on the model), default 1K")
     ap.add_argument("-a", "--aspect", choices=ASPECT_RATIOS,
-                    help="aspect ratio; without it edits keep the input shape and new images are 1:1")
+                    help="aspect ratio; without it edits keep the input shape and the model picks one for new images (16:9 in tests)")
     ap.add_argument("-i", "--image", action="append", default=[], help="input image (repeatable, max 14)")
     ap.add_argument("-t", "--thinking", choices=["minimal", "medium", "high"],
                     help="thinking level (2.1: minimal/medium/high, 2 and lite: minimal/high)")
@@ -835,6 +835,11 @@ def run_interactions(client, a, model, images, previous_id, out_dir, fx, estimat
             print(f"{label} failed after {time.monotonic() - start:.1f} s: {describe(exc)}", file=sys.stderr)
             print(f"Retry: {verdict}", file=sys.stderr)
             problems.append(f"{label} failed. {verdict}")
+            if previous_id and error_status(exc) == 404:
+                hint = (f"The interaction {previous_id} no longer exists at Google (deleted with --delete, or "
+                        "past its storage time). Pass the image itself with -i instead of --follow-up.")
+                print(hint, file=sys.stderr)
+                problems.append(hint)
             break
         seconds = time.monotonic() - start
         print(f"{label}: the API answered in {seconds:.1f} s")

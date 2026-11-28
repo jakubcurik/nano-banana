@@ -406,6 +406,18 @@ class ReadTimeout(Exception):
     pass
 
 
+class DeletedFollowUpTests(unittest.TestCase):
+    def test_follow_up_on_a_deleted_interaction_explains_itself(self):
+        args = parse("Make the cap blue.", "--follow-up", "v1_gone")
+        err = io.StringIO()
+        with redirect_stdout(io.StringIO()), redirect_stderr(err):
+            code = generate.run_interactions(fake_client(StatusError(404)), args, generate.MODELS["2.1"], [],
+                                             "v1_gone", Path(tempfile.gettempdir()), None, 0.0336)
+        self.assertEqual(code, 1)
+        self.assertIn("v1_gone no longer exists", err.getvalue())
+        self.assertIn("-i", err.getvalue())
+
+
 class ErrorClassificationTests(unittest.TestCase):
     def test_client_errors_are_safe_to_retry(self):
         for status in (400, 401, 403, 404):
